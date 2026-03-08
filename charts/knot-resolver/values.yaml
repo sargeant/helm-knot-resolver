@@ -145,6 +145,10 @@ metrics:
     interval: ""
     # @ignored
     path: /metrics/prometheus
+    # -- Namespace selector for cross-namespace Prometheus discovery (e.g. `{matchNames: ["knot"]}`)
+    # @section -- Monitoring
+    # @default -- same namespace only
+    namespaceSelector: {}
 
 # -- Number of Knot Resolver pods to run
 # @section -- Deployment

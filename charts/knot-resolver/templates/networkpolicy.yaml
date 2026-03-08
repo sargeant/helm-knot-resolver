@@ -38,6 +38,7 @@ spec:
             - port: {{ $.Values.listenPort | quote }}
               protocol: ANY
     {{- end }}
+    {{- if .Values.metrics.enabled }}
     - fromEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: {{ .Values.networkPolicy.metricsNamespace | quote }}
@@ -45,6 +46,7 @@ spec:
         - ports:
             - port: {{ .Values.managementPort | quote }}
               protocol: TCP
+    {{- end }}
 {{- else if and .Values.networkPolicy.enabled (eq .Values.networkPolicy.flavor "kubernetes") }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -93,6 +95,7 @@ spec:
         - port: {{ $.Values.listenPort }}
           protocol: TCP
     {{- end }}
+    {{- if .Values.metrics.enabled }}
     - from:
         - namespaceSelector:
             matchLabels:
@@ -100,6 +103,7 @@ spec:
       ports:
         - port: {{ .Values.managementPort }}
           protocol: TCP
+    {{- end }}
 {{- else if .Values.networkPolicy.enabled }}
 {{- fail (printf "networkPolicy.flavor must be one of: cilium, kubernetes (got %q)" .Values.networkPolicy.flavor) }}
 {{- end }}
