@@ -6,6 +6,33 @@ entries:
       artifacthub.io/license: Apache-2.0
     apiVersion: v2
     appVersion: v6.2.0
+    created: "2026-03-08T11:33:50.762072868Z"
+    description: Knot Resolver — caching DNSSEC-validating DNS resolver
+    digest: ca65de85508652c4b05280e2a95ba9b4441fad62238c0b2c71e40435f2a79218
+    home: https://www.knot-resolver.cz/
+    keywords:
+    - dns
+    - resolver
+    - dnssec
+    - knot-resolver
+    - kresd
+    kubeVersion: '>=1.23.0-0'
+    maintainers:
+    - email: sam@sargeant.net.nz
+      name: Sam Sargeant
+      url: https://github.com/sargeant
+    name: knot-resolver
+    sources:
+    - https://github.com/CZ-NIC/knot-resolver
+    type: application
+    urls:
+    - https://github.com/sargeant/helm-knot-resolver/releases/download/knot-resolver-0.4.1/knot-resolver-0.4.1.tgz
+    version: 0.4.1
+  - annotations:
+      artifacthub.io/category: networking
+      artifacthub.io/license: Apache-2.0
+    apiVersion: v2
+    appVersion: v6.2.0
     created: "2026-03-08T11:27:32.013428717Z"
     description: Knot Resolver — caching DNSSEC-validating DNS resolver
     digest: 8cd76a264456d7954fec899b4f5851fdc2c8291cdfda2a6fbf5adac71568dc86
@@ -28,4 +55,4 @@ entries:
     urls:
     - https://github.com/sargeant/helm-knot-resolver/releases/download/knot-resolver-0.4.0/knot-resolver-0.4.0.tgz
     version: 0.4.0
-generated: "2026-03-08T11:27:32.013433959Z"
+generated: "2026-03-08T11:33:50.762082036Z"
