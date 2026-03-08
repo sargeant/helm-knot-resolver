@@ -1,6 +1,6 @@
 # knot-resolver
 
-![Version: 0.4.1](https://img.shields.io/badge/Version-0.4.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v6.2.0](https://img.shields.io/badge/AppVersion-v6.2.0-informational?style=flat-square)
+![Version: 0.4.5](https://img.shields.io/badge/Version-0.4.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v6.2.0](https://img.shields.io/badge/AppVersion-v6.2.0-informational?style=flat-square)
 
 Caching DNSSEC-validating DNS resolver
 
@@ -75,12 +75,15 @@ spec:
 | resolver.glueChecking | string | `"normal"` | Glue record checking mode: `normal`, `strict`, or `permissive` |
 | resolver.dnssec | bool | `true` | Enable DNSSEC validation |
 | resolver.dnssecNegativeTrustAnchors | list | `[]` | Domains to skip DNSSEC validation for (e.g. broken signed domains) |
+| resolver.timeJumpDetection | string | Knot Resolver default (`true`) | Detect system clock vs DNSSEC signature time skew on root NS records |
+| resolver.violatorsWorkarounds | string | Knot Resolver default (`false`) | Enable workarounds for known DNS protocol violators |
 | resolver.workers | string | Knot Resolver default | Number of resolver worker processes (`auto` or a number) |
 | cache.sizeLimit | string | `"128Mi"` | Size of the in-memory DNS cache (sets both `cache.size-max` and the emptyDir sizeLimit) |
 | cache.ttlMin | string | Knot Resolver default | Minimum TTL for cached records (integer seconds or duration string like `60s`, `1m`) |
 | cache.ttlMax | string | Knot Resolver default | Maximum TTL for cached records (integer seconds or duration string like `86400s`, `24h`) |
 | cache.prefetchExpiring | bool | `false` | Prefetch expiring records before they expire |
 | cache.prefetchPrediction | bool | `false` | Enable predictive prefetch (learns query patterns, experimental). Set `true` for defaults or pass an object with `window` and `period` keys. |
+| cache.prefill | bool | `false` | Prefill the cache with root zone data fetched over HTTPS (reduces cold-start latency). Set `true` for sensible defaults or pass an object with `url`, `refreshInterval`, and optional `caFile`. |
 | configOverride | object | `{}` | Raw Knot Resolver configuration — merged last, overrides everything |
 
 ### Logging
@@ -114,6 +117,7 @@ spec:
 | metrics.enabled | bool | `true` | Create a metrics Service |
 | metrics.port | int | `5000` | Metrics service port |
 | metrics.serviceMonitor.enabled | bool | `false` | Create a Prometheus ServiceMonitor |
+| metrics.serviceMonitor.namespaceSelector | object | same namespace only | Namespace selector for cross-namespace Prometheus discovery (e.g. `{matchNames: ["knot"]}`) |
 
 ### Deployment
 
