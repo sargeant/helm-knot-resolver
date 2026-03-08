@@ -127,6 +127,12 @@ emitted explicitly to avoid depending on upstream defaults.
 {{- $cfg := dict -}}
 {{- $_ := set $cfg "options" (mustMergeOverwrite (default dict (get $cfg "options")) (dict "rebinding-protection" .Values.resolver.rebindingProtection)) -}}
 {{- $_ := set $cfg "options" (mustMergeOverwrite (default dict (get $cfg "options")) (dict "serve-stale" .Values.resolver.serveStale)) -}}
+{{- if kindIs "bool" .Values.resolver.timeJumpDetection -}}
+{{- $_ := set $cfg "options" (mustMergeOverwrite (default dict (get $cfg "options")) (dict "time-jump-detection" .Values.resolver.timeJumpDetection)) -}}
+{{- end -}}
+{{- if kindIs "bool" .Values.resolver.violatorsWorkarounds -}}
+{{- $_ := set $cfg "options" (mustMergeOverwrite (default dict (get $cfg "options")) (dict "violators-workarounds" .Values.resolver.violatorsWorkarounds)) -}}
+{{- end -}}
 {{- $glue := .Values.resolver.glueChecking -}}
 {{- if kindIs "bool" $glue -}}
 {{- $glue = ternary "normal" "permissive" $glue -}}
@@ -162,6 +168,13 @@ emitted explicitly to avoid depending on upstream defaults.
 {{- $_ := set $prefetch "prediction" $prediction -}}
 {{- end -}}
 {{- $_ := set $cfg "cache" (mustMergeOverwrite (default dict (get $cfg "cache")) (dict "prefetch" $prefetch)) -}}
+{{- if .Values.cache.prefill -}}
+{{- $prefillEntry := .Values.cache.prefill -}}
+{{- if kindIs "bool" $prefillEntry -}}
+{{- $prefillEntry = dict "origin" "." "url" "https://www.internic.net/domain/root.zone" "refresh-interval" "1d" -}}
+{{- end -}}
+{{- $_ := set $cfg "cache" (mustMergeOverwrite (default dict (get $cfg "cache")) (dict "prefill" (list $prefillEntry))) -}}
+{{- end -}}
 {{- if .Values.resolver.workers }}
 {{- if eq (typeOf .Values.resolver.workers) "string" }}
 {{- if eq .Values.resolver.workers "auto" }}

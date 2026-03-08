@@ -47,6 +47,14 @@ resolver:
   # -- Domains to skip DNSSEC validation for (e.g. broken signed domains)
   # @section -- Resolver
   dnssecNegativeTrustAnchors: []
+  # -- Detect system clock vs DNSSEC signature time skew on root NS records
+  # @section -- Resolver
+  # @default -- Knot Resolver default (`true`)
+  timeJumpDetection: ""
+  # -- Enable workarounds for known DNS protocol violators
+  # @section -- Resolver
+  # @default -- Knot Resolver default (`false`)
+  violatorsWorkarounds: ""
   # -- Number of resolver worker processes (`auto` or a number)
   # @section -- Resolver
   # @default -- Knot Resolver default
@@ -79,6 +87,10 @@ cache:
   # -- Enable predictive prefetch (learns query patterns, experimental). Set `true` for defaults or pass an object with `window` and `period` keys.
   # @section -- Resolver
   prefetchPrediction: false
+  # -- Prefill the cache with root zone data fetched over HTTPS (reduces cold-start latency).
+  # Set `true` for sensible defaults or pass an object with `url`, `refreshInterval`, and optional `caFile`.
+  # @section -- Resolver
+  prefill: false
 
 # -- Raw Knot Resolver configuration — merged last, overrides everything
 # @section -- Resolver
