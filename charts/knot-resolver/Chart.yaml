@@ -21,3 +21,11 @@ maintainers:
 annotations:
   artifacthub.io/category: networking
   artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: |
+    - name: Knot Resolver docs
+      url: https://www.knot-resolver.cz/documentation/latest/
+    - name: support
+      url: https://github.com/sargeant/helm-knot-resolver/issues
+  artifacthub.io/changes: |
+    - kind: changed
+      description: In development
