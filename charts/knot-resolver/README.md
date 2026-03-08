@@ -17,8 +17,11 @@ Opt-in DNSSEC-validating DNS alongside CoreDNS. Pods set `dnsPolicy: None` point
 ## Install
 
 ```bash
+# use x.x.x.53 for ClusterIP, or assign your own
+DNS_IP=$(kubectl get svc kubernetes -o jsonpath='{.spec.clusterIP}' | awk -F. '{print $1"."$2"."$3".53"}')
+
 helm repo add knot-resolver https://sargeant.github.io/helm-knot-resolver
-helm install knot-resolver knot-resolver/knot-resolver --set service.clusterIP=10.96.0.53
+helm install knot-resolver knot-resolver/knot-resolver --set service.clusterIP=$DNS_IP
 helm test knot-resolver
 ```
 
@@ -31,7 +34,7 @@ spec:
   dnsPolicy: "None"
   dnsConfig:
     nameservers:
-      - "10.96.0.53"
+      - "<DNS_IP>"
     searches:
       - NAMESPACE.svc.cluster.local
       - svc.cluster.local
