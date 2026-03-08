@@ -1,0 +1,5 @@
+misconfiguration:
+  helm:
+    kube-version: "1.30.0"
+    set:
+      - service.clusterIP=10.96.0.53

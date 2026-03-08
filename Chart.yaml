@@ -1,0 +1,23 @@
+apiVersion: v2
+name: knot-resolver
+description: Knot Resolver — caching DNSSEC-validating DNS resolver
+type: application
+version: 0.4.0
+kubeVersion: ">=1.23.0-0"
+appVersion: "v6.2.0"
+home: https://www.knot-resolver.cz/
+sources:
+  - https://github.com/CZ-NIC/knot-resolver
+keywords:
+  - dns
+  - resolver
+  - dnssec
+  - knot-resolver
+  - kresd
+maintainers:
+  - name: Sam Sargeant
+    email: sam@sargeant.net.nz
+    url: https://github.com/sargeant
+annotations:
+  artifacthub.io/category: networking
+  artifacthub.io/license: Apache-2.0

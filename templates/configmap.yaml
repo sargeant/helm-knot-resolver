@@ -1,0 +1,28 @@
+{{- $baseConfig := include "knot-resolver.baseConfig" . | fromYaml -}}
+{{- $firstClassRaw := include "knot-resolver.firstClassConfig" . -}}
+{{- $firstClassConfig := ternary (dict) ($firstClassRaw | fromYaml) (eq $firstClassRaw "") -}}
+{{- $mergedConfig := mustMergeOverwrite (dict) $baseConfig $firstClassConfig -}}
+{{- $kubeDNSForward := include "knot-resolver.kubeDNSForward" . -}}
+{{- $upstreamForward := include "knot-resolver.upstreamForward" . -}}
+{{- $forwardList := default list .Values.forwarding.zones -}}
+{{- if $kubeDNSForward }}
+{{- $kubeDNSConfig := $kubeDNSForward | fromYaml -}}
+{{- $forwardList = concat $kubeDNSConfig.forward $forwardList -}}
+{{- end }}
+{{- if $upstreamForward }}
+{{- $upstreamConfig := $upstreamForward | fromYaml -}}
+{{- $forwardList = concat $forwardList $upstreamConfig.forward -}}
+{{- end }}
+{{- if $forwardList }}
+{{- $_ := set $mergedConfig "forward" $forwardList -}}
+{{- end }}
+{{- $mergedConfig = mustMergeOverwrite $mergedConfig (deepCopy .Values.configOverride) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "knot-resolver.fullname" . }}
+  labels:
+    {{- include "knot-resolver.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    {{- toYaml $mergedConfig | nindent 4 }}

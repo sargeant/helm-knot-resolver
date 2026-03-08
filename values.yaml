@@ -1,0 +1,233 @@
+# -- Port Knot Resolver listens on for DNS queries inside the container
+# @section -- Resolver
+# @ignored
+listenPort: 5353
+# -- Port for the management API and metrics inside the container
+# @section -- Resolver
+# @ignored
+managementPort: 5000
+
+forwarding:
+  kubeDNS:
+    # -- Auto-inject a cluster.local forward subtree pointing at the kube-dns Service
+    # @section -- Forwarding
+    enabled: false
+    # -- kube-dns Service IP (auto-detected if empty, falls back to 10.96.0.10)
+    # @section -- Forwarding
+    # @default -- auto-detected
+    clusterIP: ""
+  upstream:
+    # -- Forward all queries to a well-known encrypted DNS provider over DoT instead of doing recursive resolution
+    # @section -- Forwarding
+    enabled: false
+    # -- DNS provider: `quad9`, `cloudflare`, or `google`
+    # @section -- Forwarding
+    provider: quad9
+  # -- Additional forward zones (list of Knot Resolver forward subtree objects).
+  # The chart auto-injects `cluster.local` when `forwarding.kubeDNS.enabled` is true; entries here are appended after it.
+  # @section -- Forwarding
+  zones: []
+
+resolver:
+  # -- Enable DNS rebinding protection (blocks responses with private IPs from public names)
+  # @section -- Resolver
+  rebindingProtection: false
+  # -- Log domains that fail DNSSEC validation
+  # @section -- Resolver
+  logBogus: true
+  # -- Serve expired cache entries when upstream is unreachable
+  # @section -- Resolver
+  serveStale: true
+  # -- Validate glue records from parent zones
+  # @section -- Resolver
+  # @default -- Knot Resolver default (`true`)
+  glueChecking: true
+  # -- Enable DNSSEC validation
+  # @section -- Resolver
+  dnssec: true
+  # -- Domains to skip DNSSEC validation for (e.g. broken signed domains)
+  # @section -- Resolver
+  dnssecNegativeTrustAnchors: []
+  # -- Number of resolver worker processes (`auto` or a number)
+  # @section -- Resolver
+  # @default -- Knot Resolver default
+  workers: ""
+
+logging:
+  # -- Global log level (`crit`, `err`, `warning`, `notice`, `info`, `debug`)
+  # @section -- Logging
+  # @default -- Knot Resolver default (`notice`)
+  level: ""
+  # -- Subsystems that get debug-level logging regardless of the global level (e.g. `["dnssec", "cache"]`)
+  # @section -- Logging
+  groups: []
+
+cache:
+  # -- Size of the in-memory DNS cache (sets both `cache.size-max` and the emptyDir sizeLimit)
+  # @section -- Resolver
+  sizeLimit: 128Mi
+  # -- Minimum TTL in seconds for cached records
+  # @section -- Resolver
+  # @default -- Knot Resolver default
+  ttlMin: ""
+  # -- Maximum TTL in seconds for cached records
+  # @section -- Resolver
+  # @default -- Knot Resolver default
+  ttlMax: ""
+  # -- Prefetch expiring records before they expire
+  # @section -- Resolver
+  prefetchExpiring: false
+  # -- Enable predictive prefetch (learns query patterns, experimental)
+  # @section -- Resolver
+  prefetchPrediction: false
+
+# -- Raw Knot Resolver configuration. Use as an escape hatch when
+# you need full control. Merged last: any key you set here overrides the chart.
+# @section -- Resolver
+configOverride: {}
+
+networkPolicy:
+  # -- Create a network policy
+  # @section -- Network Policy
+  enabled: false
+  # -- Network policy flavour: `cilium` for CiliumNetworkPolicy, `kubernetes` for NetworkPolicy
+  # @section -- Network Policy
+  flavor: cilium
+  # -- Namespaces allowed to query Knot Resolver
+  # @section -- Network Policy
+  ingressNamespaces: []
+  # -- Namespace allowed to scrape metrics
+  # @section -- Network Policy
+  metricsNamespace: monitoring
+  # -- Allow recursive resolution to the internet
+  # @section -- Network Policy
+  egressToInternet: true
+
+
+# @ignored
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+service:
+  # @ignored
+  type: ClusterIP
+  # -- Static ClusterIP, pin to well-known IP address from ServiceCIDR
+  # @section -- Service
+  # @default -- auto-assigned
+  clusterIP: ""
+  # -- DNS service port
+  # @section -- Service
+  port: 53
+  # -- Container port for DNS
+  # @section -- Service
+  # @ignored
+  targetPort: 5353
+  # @ignored
+  annotations: {}
+
+metrics:
+  # -- Create a metrics Service
+  # @section -- Monitoring
+  enabled: true
+  # -- Metrics service port
+  # @section -- Monitoring
+  port: 5000
+  serviceMonitor:
+    # -- Create a Prometheus ServiceMonitor
+    # @section -- Monitoring
+    enabled: false
+    # @ignored
+    labels: {}
+    # @ignored
+    interval: ""
+    # @ignored
+    path: /metrics/prometheus
+
+# -- Number of Knot Resolver pods to run
+# @section -- Deployment
+replicaCount: 1
+
+# @ignored
+revisionHistoryLimit: 2
+
+# @ignored
+strategy: {}
+
+# -- Extra volumes for the pod (e.g. RPZ blocklists, custom Lua scripts, TLS certs)
+# @section -- Deployment
+extraVolumes: []
+
+# -- Extra volume mounts for the resolver container
+# @section -- Deployment
+extraVolumeMounts: []
+
+# @ignored
+image:
+  repository: cznic/knot-resolver
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# @ignored
+imagePullSecrets: []
+
+# @ignored
+nameOverride: ""
+# @ignored
+fullnameOverride: ""
+
+# @ignored
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+# @ignored
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 101
+  runAsGroup: 102
+  fsGroup: 102
+  seccompProfile:
+    type: RuntimeDefault
+
+# @ignored
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+# @ignored
+podAnnotations: {}
+# @ignored
+podLabels: {}
+# @ignored
+nodeSelector: {}
+# @ignored
+tolerations: []
+# @ignored
+defaultAntiAffinity:
+  enabled: true
+  topologyKey: kubernetes.io/hostname
+  type: preferred
+
+# @ignored
+affinity: {}
+# @ignored
+topologySpreadConstraints: []
+
+podDisruptionBudget:
+  # -- Create a PodDisruptionBudget
+  # @section -- Deployment
+  enabled: false
+  # -- Minimum number of available pods
+  # @section -- Deployment
+  minAvailable: 1
+  # -- Maximum number of unavailable pods (overrides minAvailable)
+  # @section -- Deployment
+  # maxUnavailable: 1

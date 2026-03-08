@@ -1,0 +1,105 @@
+{{- if and .Values.networkPolicy.enabled (eq .Values.networkPolicy.flavor "cilium") }}
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: {{ include "knot-resolver.fullname" . }}
+  labels:
+    {{- include "knot-resolver.labels" . | nindent 4 }}
+spec:
+  endpointSelector:
+    matchLabels:
+      {{- include "knot-resolver.selectorLabels" . | nindent 6 }}
+  egress:
+    {{- if .Values.networkPolicy.egressToInternet }}
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+            - port: "853"
+              protocol: TCP
+    {{- end }}
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s:k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+  ingress:
+    {{- range .Values.networkPolicy.ingressNamespaces }}
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: {{ . | quote }}
+      toPorts:
+        - ports:
+            - port: {{ $.Values.listenPort | quote }}
+              protocol: ANY
+    {{- end }}
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: {{ .Values.networkPolicy.metricsNamespace | quote }}
+      toPorts:
+        - ports:
+            - port: {{ .Values.managementPort | quote }}
+              protocol: TCP
+{{- else if and .Values.networkPolicy.enabled (eq .Values.networkPolicy.flavor "kubernetes") }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "knot-resolver.fullname" . }}
+  labels:
+    {{- include "knot-resolver.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "knot-resolver.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  egress:
+    {{- if .Values.networkPolicy.egressToInternet }}
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+        - port: 853
+          protocol: TCP
+    {{- end }}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+  ingress:
+    {{- range .Values.networkPolicy.ingressNamespaces }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . | quote }}
+      ports:
+        - port: {{ $.Values.listenPort }}
+          protocol: UDP
+        - port: {{ $.Values.listenPort }}
+          protocol: TCP
+    {{- end }}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.metricsNamespace | quote }}
+      ports:
+        - port: {{ .Values.managementPort }}
+          protocol: TCP
+{{- else if .Values.networkPolicy.enabled }}
+{{- fail (printf "networkPolicy.flavor must be one of: cilium, kubernetes (got %q)" .Values.networkPolicy.flavor) }}
+{{- end }}

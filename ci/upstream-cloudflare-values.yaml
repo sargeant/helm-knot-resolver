@@ -1,0 +1,4 @@
+forwarding:
+  upstream:
+    enabled: true
+    provider: cloudflare

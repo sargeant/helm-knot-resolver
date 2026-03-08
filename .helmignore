@@ -1,0 +1,11 @@
+.git
+.github
+.gitignore
+CLAUDE.md
+README.md.gotmpl
+icon.png
+LICENSE
+ct.yaml
+.helmignore
+.trivyignore
+trivy.yaml

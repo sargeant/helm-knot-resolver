@@ -1,0 +1,73 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+## Overview
+
+[Knot Resolver](https://www.knot-resolver.cz/) is a **caching, DNSSEC-validating DNS resolver** built by [CZ.NIC](https://www.nic.cz). This Helm chart deploys it as an opt-in secondary DNS alongside CoreDNS. Pods that set `dnsPolicy: None` pointing at the Knot Resolver ClusterIP get DNSSEC validation, custom forwarding, and recursive resolution.
+
+Uses the official [`cznic/knot-resolver:v6.x.x`](https://hub.docker.com/r/cznic/knot-resolver) image. This is a community Helm chart and not affiliated with Knot Resolver.
+
+## Installing the Chart
+
+```bash
+helm repo add knot-resolver https://sargeant.github.io/helm-knot-resolver
+helm install knot-resolver knot-resolver/knot-resolver --set service.clusterIP="10.96.0.53"
+```
+
+Verify with `helm test knot-resolver`.
+
+## Configure Pods to use DNS-SEC with Knot Resolver
+
+For pods to use Knot Resolver, set `dnsPolicy: "None"` with a full `dnsConfig`.
+
+```yaml
+spec:
+  dnsPolicy: "None"
+  dnsConfig:
+    nameservers:
+      - "10.96.0.53"
+```
+
+> [!note]
+> This will only use the Internet's root name-servers and be cut off from your cluster's internal service discovery.
+
+To also resolve cluster-internal names, set `forwarding.kubeDNS.enabled: true` which will forward `cluster.local` to kube-dns, then update your `dnsConfig:`
+
+```yaml
+spec:
+  dnsPolicy: "None"
+  dnsConfig:
+    nameservers:
+      - "10.96.0.53"
+    searches:
+      - NAMESPACE.svc.cluster.local
+      - svc.cluster.local
+      - cluster.local
+    options:
+      - name: ndots
+        value: "2"
+```
+
+> [!warning]
+> Replace `NAMESPACE` with your pod's namespace. The `searches` block is required for short names like `my-service`. `ndots:2` avoids wasted search-domain lookups for external names; use `ndots:5` if you need three-segment internal names like `my-service.my-namespace.svc` to resolve without a trailing dot.
+
+## Caveats
+
+- **Don't change your deployment tool's DNS**. If ArgoCD/Flux itself uses Knot Resolver and Knot Resolver goes down, you can't redeploy. Same for alerting stacks.
+- **Service mesh DNS capture**. Istio sidecars can intercept DNS before it reaches Knot Resolver, silently bypassing DNSSEC validation.
+- **`cluster.local` spoofing**. If `kubeDNS.enabled` is true, kube-dns doesn't sign responses, so the forward uses `dnssec: false`. An attacker who can spoof the kube-dns ClusterIP could poison internal DNS. Enabling `networkPolicy` mitigates this.
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}

@@ -1,0 +1,33 @@
+forwarding:
+  kubeDNS:
+    enabled: true
+  upstream:
+    enabled: true
+    provider: google
+
+resolver:
+  rebindingProtection: true
+  logBogus: true
+  serveStale: true
+  glueChecking: true
+  dnssec: true
+
+logging:
+  level: info
+
+cache:
+  sizeLimit: 256Mi
+  ttlMin: 60
+  ttlMax: 86400
+  prefetchExpiring: true
+  prefetchPrediction: true
+
+metrics:
+  serviceMonitor:
+    enabled: true
+
+replicaCount: 2
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1

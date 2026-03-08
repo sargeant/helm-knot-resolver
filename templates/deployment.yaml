@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "knot-resolver.fullname" . }}
+  labels:
+    {{- include "knot-resolver.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  {{- with .Values.strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "knot-resolver.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "knot-resolver.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "knot-resolver.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      automountServiceAccountToken: false
+      containers:
+        - name: knot-resolver
+          image: {{ include "knot-resolver.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: dns
+              containerPort: {{ .Values.listenPort }}
+              protocol: UDP
+            - name: dns-tcp
+              containerPort: {{ .Values.listenPort }}
+              protocol: TCP
+            - name: metrics
+              containerPort: {{ .Values.managementPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /metrics/prometheus
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /metrics/prometheus
+              port: metrics
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/knot-resolver/config.yaml
+              subPath: config.yaml
+            - name: cache
+              mountPath: /var/cache/knot-resolver
+            - name: rundir
+              mountPath: /run/knot-resolver
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      {{- else if .Values.defaultAntiAffinity.enabled }}
+      {{- if not (or (eq .Values.defaultAntiAffinity.type "preferred") (eq .Values.defaultAntiAffinity.type "required")) }}
+      {{- fail (printf "defaultAntiAffinity.type must be one of: preferred, required (got %q)" .Values.defaultAntiAffinity.type) }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+          {{- if eq .Values.defaultAntiAffinity.type "required" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  {{- include "knot-resolver.selectorLabels" . | nindent 18 }}
+              topologyKey: {{ .Values.defaultAntiAffinity.topologyKey }}
+          {{- else }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "knot-resolver.selectorLabels" . | nindent 20 }}
+                topologyKey: {{ .Values.defaultAntiAffinity.topologyKey }}
+          {{- end }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "knot-resolver.fullname" . }}
+        - name: cache
+          emptyDir:
+            medium: Memory
+            sizeLimit: {{ dig "cache" "size-max" .Values.cache.sizeLimit .Values.configOverride }}
+        - name: rundir
+          emptyDir: {}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}

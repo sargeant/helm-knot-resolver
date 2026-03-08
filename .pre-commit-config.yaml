@@ -1,0 +1,51 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+        exclude: ^templates/
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [-c, .yamllint.yaml]
+        exclude: ^templates/
+
+  - repo: local
+    hooks:
+      - id: helm-lint
+        name: helm lint
+        entry: helm lint .
+        language: system
+        pass_filenames: false
+        files: (Chart\.yaml|values\.yaml|templates/)
+
+      - id: helm-docs
+        name: helm-docs
+        entry: helm-docs --sort-values-order file --ignore-non-descriptions
+        language: system
+        pass_filenames: false
+        files: (values\.yaml|README\.md\.gotmpl|Chart\.yaml)
+
+      - id: kubeconform
+        name: kubeconform
+        entry: >-
+          bash -c 'for f in ci/*.yaml; do
+          helm template t . -f "$f" --set service.clusterIP=10.96.0.53
+          | kubeconform -strict -summary -ignore-missing-schemas
+          -kubernetes-version 1.30.0; done'
+        language: system
+        pass_filenames: false
+        files: (Chart\.yaml|values\.yaml|templates/)
+
+      - id: trivy-config
+        name: trivy config
+        entry: trivy config --exit-code 1 --severity MEDIUM,HIGH,CRITICAL .
+        language: system
+        pass_filenames: false
+        files: (Chart\.yaml|values\.yaml|templates/)
