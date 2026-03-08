@@ -149,11 +149,14 @@ emitted explicitly to avoid depending on upstream defaults.
 {{- if .Values.cache.ttlMax }}
 {{- $_ := set $cfg "cache" (mustMergeOverwrite (default dict (get $cfg "cache")) (dict "ttl-max" (.Values.cache.ttlMax | int))) -}}
 {{- end }}
+{{- $prefetch := dict "expiring" .Values.cache.prefetchExpiring -}}
+{{- if .Values.cache.prefetchPrediction -}}
 {{- $prediction := .Values.cache.prefetchPrediction -}}
 {{- if kindIs "bool" $prediction -}}
-{{- $prediction = ternary (dict) false $prediction -}}
+{{- $prediction = dict -}}
 {{- end -}}
-{{- $prefetch := dict "expiring" .Values.cache.prefetchExpiring "prediction" $prediction -}}
+{{- $_ := set $prefetch "prediction" $prediction -}}
+{{- end -}}
 {{- $_ := set $cfg "cache" (mustMergeOverwrite (default dict (get $cfg "cache")) (dict "prefetch" $prefetch)) -}}
 {{- if .Values.resolver.workers }}
 {{- if eq (typeOf .Values.resolver.workers) "string" }}
