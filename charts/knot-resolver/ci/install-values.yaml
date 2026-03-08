@@ -3,7 +3,13 @@ forwarding:
     enabled: true
   upstream:
     enabled: true
-    provider: google
+    provider: quad9
+
+networkPolicy:
+  enabled: true
+  flavor: kubernetes
+  ingressNamespaces:
+    - default
 
 resolver:
   rebindingProtection: true

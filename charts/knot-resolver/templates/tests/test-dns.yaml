@@ -8,27 +8,23 @@ metadata:
     helm.sh/hook: test
 spec:
   restartPolicy: Never
-  dnsPolicy: "None"
-  dnsConfig:
-    nameservers:
-      {{- if .Values.service.clusterIP }}
-      - {{ .Values.service.clusterIP | quote }}
-      {{- else }}
-      {{- $svc := (lookup "v1" "Service" .Release.Namespace (include "knot-resolver.fullname" .)) }}
-      {{- if $svc }}
-      - {{ $svc.spec.clusterIP | quote }}
-      {{- else }}
-      {{- fail "helm test requires service.clusterIP to be set or the Service to already exist" }}
-      {{- end }}
-      {{- end }}
-    searches:
-      - {{ .Release.Namespace }}.svc.cluster.local
-      - svc.cluster.local
-      - cluster.local
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    seccompProfile:
+      type: RuntimeDefault
   containers:
     - name: dns-resolve
       image: busybox:1.36
-      command: ["nslookup", "example.com"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+      command: ["nslookup", "example.com", {{ printf "%s.%s.svc.cluster.local" (include "knot-resolver.fullname" .) .Release.Namespace | quote }}]
     - name: dnssec-validate
       image: busybox:1.36
-      command: ["sh", "-c", "! nslookup dnssec-failed.org"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+      command: ["sh", "-c", {{ printf "! nslookup dnssec-failed.org %s.%s.svc.cluster.local" (include "knot-resolver.fullname" .) .Release.Namespace | quote }}]
