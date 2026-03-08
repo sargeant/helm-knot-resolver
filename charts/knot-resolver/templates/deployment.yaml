@@ -49,17 +49,21 @@ spec:
             - name: metrics
               containerPort: {{ .Values.managementPort }}
               protocol: TCP
+          startupProbe:
+            httpGet:
+              path: /metrics/prometheus
+              port: metrics
+            failureThreshold: 30
+            periodSeconds: 2
           livenessProbe:
             httpGet:
               path: /metrics/prometheus
               port: metrics
-            initialDelaySeconds: 5
             periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /metrics/prometheus
               port: metrics
-            initialDelaySeconds: 3
             periodSeconds: 5
           securityContext:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
