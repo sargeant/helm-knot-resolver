@@ -38,10 +38,9 @@ resolver:
   # -- Serve expired cache entries when upstream is unreachable
   # @section -- Resolver
   serveStale: true
-  # -- Validate glue records from parent zones
+  # -- Glue record checking mode: `normal`, `strict`, or `permissive` (boolean `true`/`false` maps to `normal`/`permissive`)
   # @section -- Resolver
-  # @default -- Knot Resolver default (`true`)
-  glueChecking: true
+  glueChecking: normal
   # -- Enable DNSSEC validation
   # @section -- Resolver
   dnssec: true
@@ -77,7 +76,7 @@ cache:
   # -- Prefetch expiring records before they expire
   # @section -- Resolver
   prefetchExpiring: false
-  # -- Enable predictive prefetch (learns query patterns, experimental)
+  # -- Enable predictive prefetch (learns query patterns, experimental). Set `true` for defaults or pass an object with `window` and `period` keys.
   # @section -- Resolver
   prefetchPrediction: false
 

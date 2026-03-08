@@ -9,7 +9,7 @@ resolver:
   rebindingProtection: true
   logBogus: true
   serveStale: true
-  glueChecking: true
+  glueChecking: normal
   dnssec: true
 
 logging:

@@ -64,7 +64,10 @@
           "type": "boolean"
         },
         "glueChecking": {
-          "type": "boolean"
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "string", "enum": ["normal", "strict", "permissive"] }
+          ]
         },
         "dnssec": {
           "type": "boolean"
@@ -123,7 +126,10 @@
           "type": "boolean"
         },
         "prefetchPrediction": {
-          "type": "boolean"
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "object" }
+          ]
         }
       }
     },

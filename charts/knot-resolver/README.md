@@ -85,7 +85,7 @@ spec:
 | resolver.rebindingProtection | bool | `false` | Enable DNS rebinding protection (blocks responses with private IPs from public names) |
 | resolver.logBogus | bool | `true` | Log domains that fail DNSSEC validation |
 | resolver.serveStale | bool | `true` | Serve expired cache entries when upstream is unreachable |
-| resolver.glueChecking | bool | Knot Resolver default (`true`) | Validate glue records from parent zones |
+| resolver.glueChecking | string | `"normal"` | Glue record checking mode: `normal`, `strict`, or `permissive` (boolean `true`/`false` maps to `normal`/`permissive`) |
 | resolver.dnssec | bool | `true` | Enable DNSSEC validation |
 | resolver.dnssecNegativeTrustAnchors | list | `[]` | Domains to skip DNSSEC validation for (e.g. broken signed domains) |
 | resolver.workers | string | Knot Resolver default | Number of resolver worker processes (`auto` or a number) |
@@ -93,7 +93,7 @@ spec:
 | cache.ttlMin | string | Knot Resolver default | Minimum TTL in seconds for cached records |
 | cache.ttlMax | string | Knot Resolver default | Maximum TTL in seconds for cached records |
 | cache.prefetchExpiring | bool | `false` | Prefetch expiring records before they expire |
-| cache.prefetchPrediction | bool | `false` | Enable predictive prefetch (learns query patterns, experimental) |
+| cache.prefetchPrediction | bool | `false` | Enable predictive prefetch (learns query patterns, experimental). Set `true` for defaults or pass an object with `window` and `period` keys. |
 | configOverride | object | `{}` | Raw Knot Resolver configuration. Use as an escape hatch when you need full control. Merged last: any key you set here overrides the chart. |
 
 ### Logging

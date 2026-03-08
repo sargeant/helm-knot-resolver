@@ -127,7 +127,11 @@ emitted explicitly to avoid depending on upstream defaults.
 {{- $cfg := dict -}}
 {{- $_ := set $cfg "options" (mustMergeOverwrite (default dict (get $cfg "options")) (dict "rebinding-protection" .Values.resolver.rebindingProtection)) -}}
 {{- $_ := set $cfg "options" (mustMergeOverwrite (default dict (get $cfg "options")) (dict "serve-stale" .Values.resolver.serveStale)) -}}
-{{- $_ := set $cfg "options" (mustMergeOverwrite (default dict (get $cfg "options")) (dict "glue-checking" .Values.resolver.glueChecking)) -}}
+{{- $glue := .Values.resolver.glueChecking -}}
+{{- if kindIs "bool" $glue -}}
+{{- $glue = ternary "normal" "permissive" $glue -}}
+{{- end -}}
+{{- $_ := set $cfg "options" (mustMergeOverwrite (default dict (get $cfg "options")) (dict "glue-checking" $glue)) -}}
 {{- $_ := set $cfg "dnssec" (mustMergeOverwrite (default dict (get $cfg "dnssec")) (dict "log-bogus" .Values.resolver.logBogus)) -}}
 {{- $_ := set $cfg "dnssec" (mustMergeOverwrite (default dict (get $cfg "dnssec")) (dict "enable" .Values.resolver.dnssec)) -}}
 {{- if .Values.resolver.dnssecNegativeTrustAnchors }}
@@ -145,7 +149,11 @@ emitted explicitly to avoid depending on upstream defaults.
 {{- if .Values.cache.ttlMax }}
 {{- $_ := set $cfg "cache" (mustMergeOverwrite (default dict (get $cfg "cache")) (dict "ttl-max" (.Values.cache.ttlMax | int))) -}}
 {{- end }}
-{{- $prefetch := dict "expiring" .Values.cache.prefetchExpiring "prediction" .Values.cache.prefetchPrediction -}}
+{{- $prediction := .Values.cache.prefetchPrediction -}}
+{{- if kindIs "bool" $prediction -}}
+{{- $prediction = ternary (dict) false $prediction -}}
+{{- end -}}
+{{- $prefetch := dict "expiring" .Values.cache.prefetchExpiring "prediction" $prediction -}}
 {{- $_ := set $cfg "cache" (mustMergeOverwrite (default dict (get $cfg "cache")) (dict "prefetch" $prefetch)) -}}
 {{- if .Values.resolver.workers }}
 {{- if eq (typeOf .Values.resolver.workers) "string" }}
