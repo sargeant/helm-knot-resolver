@@ -3,11 +3,7 @@ name: Lint and Test Charts
 on:
   pull_request:
     paths:
-      - "Chart.yaml"
-      - "values.yaml"
-      - "values.schema.json"
-      - "templates/**"
-      - "ci/**"
+      - "charts/knot-resolver/**"
 
 jobs:
   lint:
@@ -25,7 +21,7 @@ jobs:
         uses: helm/chart-testing-action@v2
 
       - name: Lint chart
-        run: ct lint --charts .
+        run: ct lint --charts charts/knot-resolver
 
   kubeconform:
     runs-on: ubuntu-latest
@@ -43,9 +39,9 @@ jobs:
 
       - name: Validate rendered manifests
         run: |
-          for f in ci/*.yaml; do
+          for f in charts/knot-resolver/ci/*.yaml; do
             echo "--- Validating with $f ---"
-            helm template test-release . -f "$f" --set service.clusterIP=10.96.0.53 \
+            helm template test-release charts/knot-resolver -f "$f" --set service.clusterIP=10.96.0.53 \
               | kubeconform -strict -summary -ignore-missing-schemas -kubernetes-version 1.30.0
           done
 
@@ -59,10 +55,11 @@ jobs:
         uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: config
-          scan-ref: .
+          scan-ref: charts/knot-resolver
           exit-code: "1"
           severity: MEDIUM,HIGH,CRITICAL
-          trivy-config: trivy.yaml
+          trivy-config: charts/knot-resolver/trivy.yaml
+          trivyignores: charts/knot-resolver/.trivyignore
 
   install:
     runs-on: ubuntu-latest
@@ -83,4 +80,4 @@ jobs:
         uses: helm/kind-action@v1
 
       - name: Install chart
-        run: ct install --charts .
+        run: ct install --charts charts/knot-resolver
