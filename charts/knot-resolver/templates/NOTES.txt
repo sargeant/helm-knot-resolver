@@ -10,13 +10,12 @@ Knot Resolver has been deployed in namespace {{ .Release.Namespace }}.
 {{- if $clusterIP }}
 DNS service: {{ $clusterIP }}:{{ .Values.service.port }}
 
-To test DNS resolution from a pod using Knot Resolver:
+Test it:
 
   kubectl run -it --rm dns-test --image=busybox:1.36 --restart=Never \
-    --overrides='{"spec":{"dnsPolicy":"None","dnsConfig":{"nameservers":["{{ $clusterIP }}"]}}}' \
-    -- nslookup example.com
+    -- nslookup example.com {{ $clusterIP }}
 
-To use Knot Resolver for a specific pod, set:
+Add to your pod spec:
 
   spec:
     dnsPolicy: "None"

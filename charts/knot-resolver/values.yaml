@@ -9,7 +9,7 @@ managementPort: 5000
 
 forwarding:
   kubeDNS:
-    # -- Auto-inject a cluster.local forward subtree pointing at the kube-dns Service
+    # -- Forward `cluster.local` queries to kube-dns
     # @section -- Forwarding
     enabled: false
     # -- kube-dns Service IP (auto-detected if empty, falls back to 10.96.0.10)
@@ -17,14 +17,14 @@ forwarding:
     # @default -- auto-detected
     clusterIP: ""
   upstream:
-    # -- Forward all queries to a well-known encrypted DNS provider over DoT instead of doing recursive resolution
+    # -- Use a DoT upstream instead of recursive resolution
     # @section -- Forwarding
     enabled: false
     # -- DNS provider: `quad9`, `cloudflare`, or `google`
     # @section -- Forwarding
     provider: quad9
-  # -- Additional forward zones (list of Knot Resolver forward subtree objects).
-  # The chart auto-injects `cluster.local` when `forwarding.kubeDNS.enabled` is true; entries here are appended after it.
+  # -- Additional forward zones (raw Knot Resolver `forward` entries).
+  # Appended after the auto-injected `cluster.local` zone.
   # @section -- Forwarding
   zones: []
 
@@ -38,7 +38,7 @@ resolver:
   # -- Serve expired cache entries when upstream is unreachable
   # @section -- Resolver
   serveStale: true
-  # -- Glue record checking mode: `normal`, `strict`, or `permissive` (boolean `true`/`false` maps to `normal`/`permissive`)
+  # -- Glue record checking mode: `normal`, `strict`, or `permissive`
   # @section -- Resolver
   glueChecking: normal
   # -- Enable DNSSEC validation
@@ -80,8 +80,7 @@ cache:
   # @section -- Resolver
   prefetchPrediction: false
 
-# -- Raw Knot Resolver configuration. Use as an escape hatch when
-# you need full control. Merged last: any key you set here overrides the chart.
+# -- Raw Knot Resolver configuration — merged last, overrides everything
 # @section -- Resolver
 configOverride: {}
 
@@ -89,7 +88,7 @@ networkPolicy:
   # -- Create a network policy
   # @section -- Network Policy
   enabled: false
-  # -- Network policy flavour: `cilium` for CiliumNetworkPolicy, `kubernetes` for NetworkPolicy
+  # -- Network policy flavor: `cilium` for CiliumNetworkPolicy, `kubernetes` for NetworkPolicy
   # @section -- Network Policy
   flavor: cilium
   # -- Namespaces allowed to query Knot Resolver
@@ -98,7 +97,7 @@ networkPolicy:
   # -- Namespace allowed to scrape metrics
   # @section -- Network Policy
   metricsNamespace: monitoring
-  # -- Allow recursive resolution to the internet
+  # -- Allow outbound DNS to the internet
   # @section -- Network Policy
   egressToInternet: true
 
