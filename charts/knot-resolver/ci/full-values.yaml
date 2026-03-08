@@ -22,10 +22,6 @@ cache:
   prefetchExpiring: true
   prefetchPrediction: true
 
-metrics:
-  serviceMonitor:
-    enabled: true
-
 replicaCount: 2
 
 podDisruptionBudget:
