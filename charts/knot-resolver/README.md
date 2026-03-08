@@ -90,8 +90,8 @@ spec:
 | resolver.dnssecNegativeTrustAnchors | list | `[]` | Domains to skip DNSSEC validation for (e.g. broken signed domains) |
 | resolver.workers | string | Knot Resolver default | Number of resolver worker processes (`auto` or a number) |
 | cache.sizeLimit | string | `"128Mi"` | Size of the in-memory DNS cache (sets both `cache.size-max` and the emptyDir sizeLimit) |
-| cache.ttlMin | string | Knot Resolver default | Minimum TTL in seconds for cached records |
-| cache.ttlMax | string | Knot Resolver default | Maximum TTL in seconds for cached records |
+| cache.ttlMin | string | Knot Resolver default | Minimum TTL for cached records (integer seconds or duration string like `60s`, `1m`) |
+| cache.ttlMax | string | Knot Resolver default | Maximum TTL for cached records (integer seconds or duration string like `86400s`, `24h`) |
 | cache.prefetchExpiring | bool | `false` | Prefetch expiring records before they expire |
 | cache.prefetchPrediction | bool | `false` | Enable predictive prefetch (learns query patterns, experimental). Set `true` for defaults or pass an object with `window` and `period` keys. |
 | configOverride | object | `{}` | Raw Knot Resolver configuration. Use as an escape hatch when you need full control. Merged last: any key you set here overrides the chart. |

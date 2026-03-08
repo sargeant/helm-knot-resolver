@@ -112,13 +112,13 @@
         },
         "ttlMin": {
           "oneOf": [
-            { "type": "string", "maxLength": 0 },
+            { "type": "string" },
             { "type": "integer", "minimum": 0 }
           ]
         },
         "ttlMax": {
           "oneOf": [
-            { "type": "string", "maxLength": 0 },
+            { "type": "string" },
             { "type": "integer", "minimum": 0 }
           ]
         },

@@ -16,7 +16,7 @@ logging:
   level: info
 
 cache:
-  sizeLimit: 256Mi
+  sizeLimit: 128Mi
   ttlMin: 60
   ttlMax: 86400
   prefetchExpiring: true

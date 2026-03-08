@@ -65,11 +65,11 @@ cache:
   # -- Size of the in-memory DNS cache (sets both `cache.size-max` and the emptyDir sizeLimit)
   # @section -- Resolver
   sizeLimit: 128Mi
-  # -- Minimum TTL in seconds for cached records
+  # -- Minimum TTL for cached records (integer seconds or duration string like `60s`, `1m`)
   # @section -- Resolver
   # @default -- Knot Resolver default
   ttlMin: ""
-  # -- Maximum TTL in seconds for cached records
+  # -- Maximum TTL for cached records (integer seconds or duration string like `86400s`, `24h`)
   # @section -- Resolver
   # @default -- Knot Resolver default
   ttlMax: ""

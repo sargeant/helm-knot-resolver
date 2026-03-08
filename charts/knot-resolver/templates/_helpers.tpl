@@ -144,10 +144,14 @@ emitted explicitly to avoid depending on upstream defaults.
 {{- $_ := set $cfg "logging" (mustMergeOverwrite (default dict (get $cfg "logging")) (dict "groups" .Values.logging.groups)) -}}
 {{- end }}
 {{- if .Values.cache.ttlMin }}
-{{- $_ := set $cfg "cache" (mustMergeOverwrite (default dict (get $cfg "cache")) (dict "ttl-min" (.Values.cache.ttlMin | int))) -}}
+{{- $ttlMin := .Values.cache.ttlMin -}}
+{{- if not (regexMatch "[a-z]+$" (toString $ttlMin)) -}}{{- $ttlMin = printf "%ds" (int (toString $ttlMin)) -}}{{- end -}}
+{{- $_ := set $cfg "cache" (mustMergeOverwrite (default dict (get $cfg "cache")) (dict "ttl-min" $ttlMin)) -}}
 {{- end }}
 {{- if .Values.cache.ttlMax }}
-{{- $_ := set $cfg "cache" (mustMergeOverwrite (default dict (get $cfg "cache")) (dict "ttl-max" (.Values.cache.ttlMax | int))) -}}
+{{- $ttlMax := .Values.cache.ttlMax -}}
+{{- if not (regexMatch "[a-z]+$" (toString $ttlMax)) -}}{{- $ttlMax = printf "%ds" (int (toString $ttlMax)) -}}{{- end -}}
+{{- $_ := set $cfg "cache" (mustMergeOverwrite (default dict (get $cfg "cache")) (dict "ttl-max" $ttlMax)) -}}
 {{- end }}
 {{- $prefetch := dict "expiring" .Values.cache.prefetchExpiring -}}
 {{- if .Values.cache.prefetchPrediction -}}
