@@ -83,6 +83,18 @@
             { "type": "string", "enum": ["auto", ""] },
             { "type": "integer", "minimum": 1 }
           ]
+        },
+        "timeJumpDetection": {
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "string", "enum": [""] }
+          ]
+        },
+        "violatorsWorkarounds": {
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "string", "enum": [""] }
+          ]
         }
       }
     },
@@ -126,6 +138,12 @@
           "type": "boolean"
         },
         "prefetchPrediction": {
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "object" }
+          ]
+        },
+        "prefill": {
           "oneOf": [
             { "type": "boolean" },
             { "type": "object" }
