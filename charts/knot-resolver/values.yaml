@@ -38,10 +38,9 @@ resolver:
   # -- Serve expired cache entries when upstream is unreachable
   # @section -- Resolver
   serveStale: true
-  # -- Validate glue records from parent zones
+  # -- Glue record checking mode: `normal`, `strict`, or `permissive` (boolean `true`/`false` maps to `normal`/`permissive`)
   # @section -- Resolver
-  # @default -- Knot Resolver default (`true`)
-  glueChecking: true
+  glueChecking: normal
   # -- Enable DNSSEC validation
   # @section -- Resolver
   dnssec: true
@@ -66,18 +65,18 @@ cache:
   # -- Size of the in-memory DNS cache (sets both `cache.size-max` and the emptyDir sizeLimit)
   # @section -- Resolver
   sizeLimit: 128Mi
-  # -- Minimum TTL in seconds for cached records
+  # -- Minimum TTL for cached records (integer seconds or duration string like `60s`, `1m`)
   # @section -- Resolver
   # @default -- Knot Resolver default
   ttlMin: ""
-  # -- Maximum TTL in seconds for cached records
+  # -- Maximum TTL for cached records (integer seconds or duration string like `86400s`, `24h`)
   # @section -- Resolver
   # @default -- Knot Resolver default
   ttlMax: ""
   # -- Prefetch expiring records before they expire
   # @section -- Resolver
   prefetchExpiring: false
-  # -- Enable predictive prefetch (learns query patterns, experimental)
+  # -- Enable predictive prefetch (learns query patterns, experimental). Set `true` for defaults or pass an object with `window` and `period` keys.
   # @section -- Resolver
   prefetchPrediction: false
 

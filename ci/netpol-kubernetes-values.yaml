@@ -1,5 +1,0 @@
-networkPolicy:
-  enabled: true
-  flavor: kubernetes
-  ingressNamespaces:
-    - default

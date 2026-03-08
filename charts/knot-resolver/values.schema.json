@@ -64,7 +64,10 @@
           "type": "boolean"
         },
         "glueChecking": {
-          "type": "boolean"
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "string", "enum": ["normal", "strict", "permissive"] }
+          ]
         },
         "dnssec": {
           "type": "boolean"
@@ -109,13 +112,13 @@
         },
         "ttlMin": {
           "oneOf": [
-            { "type": "string", "maxLength": 0 },
+            { "type": "string" },
             { "type": "integer", "minimum": 0 }
           ]
         },
         "ttlMax": {
           "oneOf": [
-            { "type": "string", "maxLength": 0 },
+            { "type": "string" },
             { "type": "integer", "minimum": 0 }
           ]
         },
@@ -123,7 +126,10 @@
           "type": "boolean"
         },
         "prefetchPrediction": {
-          "type": "boolean"
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "object" }
+          ]
         }
       }
     },

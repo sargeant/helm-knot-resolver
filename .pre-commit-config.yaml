@@ -7,45 +7,49 @@ repos:
       - id: check-merge-conflict
       - id: check-yaml
         args: [--allow-multiple-documents]
-        exclude: ^templates/
+        exclude: ^charts/.*/templates/
 
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.35.1
     hooks:
       - id: yamllint
         args: [-c, .yamllint.yaml]
-        exclude: ^templates/
+        exclude: ^charts/.*/templates/
 
   - repo: local
     hooks:
       - id: helm-lint
         name: helm lint
-        entry: helm lint .
+        entry: helm lint charts/knot-resolver
         language: system
         pass_filenames: false
-        files: (Chart\.yaml|values\.yaml|templates/)
+        files: charts/knot-resolver/
 
       - id: helm-docs
         name: helm-docs
-        entry: helm-docs --sort-values-order file --ignore-non-descriptions
+        entry: helm-docs --chart-search-root charts --sort-values-order file --ignore-non-descriptions
         language: system
         pass_filenames: false
-        files: (values\.yaml|README\.md\.gotmpl|Chart\.yaml)
+        files: charts/knot-resolver/
 
       - id: kubeconform
         name: kubeconform
         entry: >-
-          bash -c 'for f in ci/*.yaml; do
-          helm template t . -f "$f" --set service.clusterIP=10.96.0.53
+          bash -c 'for f in charts/knot-resolver/ci/*.yaml; do
+          helm template t charts/knot-resolver -f "$f" --set service.clusterIP=10.96.0.53
           | kubeconform -strict -summary -ignore-missing-schemas
           -kubernetes-version 1.30.0; done'
         language: system
         pass_filenames: false
-        files: (Chart\.yaml|values\.yaml|templates/)
+        files: charts/knot-resolver/
 
       - id: trivy-config
         name: trivy config
-        entry: trivy config --exit-code 1 --severity MEDIUM,HIGH,CRITICAL .
+        entry: >-
+          trivy config --exit-code 1 --severity MEDIUM,HIGH,CRITICAL
+          -c charts/knot-resolver/trivy.yaml
+          --ignorefile charts/knot-resolver/.trivyignore
+          charts/knot-resolver
         language: system
         pass_filenames: false
-        files: (Chart\.yaml|values\.yaml|templates/)
+        files: charts/knot-resolver/
