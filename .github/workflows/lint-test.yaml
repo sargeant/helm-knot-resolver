@@ -21,7 +21,7 @@ jobs:
         uses: helm/chart-testing-action@v2
 
       - name: Lint chart
-        run: ct lint --charts charts/knot-resolver
+        run: ct lint --config ct.yaml
 
   kubeconform:
     runs-on: ubuntu-latest
@@ -52,7 +52,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Trivy config scan
-        uses: aquasecurity/trivy-action@v0.35.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           scan-type: config
           scan-ref: charts/knot-resolver
@@ -80,4 +80,4 @@ jobs:
         uses: helm/kind-action@v1
 
       - name: Install chart
-        run: ct install --charts charts/knot-resolver
+        run: ct install --config ct.yaml
