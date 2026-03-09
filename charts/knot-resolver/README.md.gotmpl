@@ -36,7 +36,7 @@ spec:
   dnsPolicy: "None"
   dnsConfig:
     nameservers:
-      - "<DNS_IP>"
+      - "DNS_IP"
     searches:
       - NAMESPACE.svc.cluster.local
       - svc.cluster.local
@@ -47,13 +47,17 @@ spec:
 ```
 
 > [!note]
-> Replace `NAMESPACE` with the pod's namespace. Use `ndots:5` if you need short three-segment internal names like `svc.ns.svc` to resolve without a trailing dot.
+> Replace `NAMESPACE` with the pod's namespace; `DNS_IP` with the address you selected for the static ClusterIP.
+
+Use `ndots:5` if you need short three-segment internal names like `myapp.prod.svc` to resolve without a trailing dot.
+
+By default, pods use `dnsPolicy: ClusterFirst`, which has the kubelet inject the cluster DNS service as the sole nameserver — overriding any `dnsConfig.nameservers` you set. `dnsPolicy: "None"` stops that override, so the pod uses exactly the `dnsConfig` you provide.
 
 ## Caveats
 
-- **Don't point your GitOps tool at Knot Resolver**. If ArgoCD/Flux uses it and it goes down, you can't redeploy.
-- **Service mesh DNS capture**. Istio sidecars can intercept DNS before it reaches Knot Resolver, bypassing DNSSEC validation.
-- **`cluster.local` is unsigned**. The kube-dns forward uses `dnssec: false`. Enabling `networkPolicy` limits who can respond on that path.
+- **Don't point your GitOps tool at Knot Resolver**. If ArgoCD/Flux deploys+queries Knot Resolver and it goes down, you can't redeploy.
+- **Service mesh DNS capture**. Service mesh sidecars may intercept DNS before it reaches Knot Resolver, bypassing DNSSEC validation.
+- **`cluster.local` is unsigned**. The kube-dns forward uses `dnssec: false`, so responses for internal names are not authenticated. Enabling `networkPolicy` restricts which pods can query and respond on that path.
 
 {{ template "chart.valuesSection" . }}
 

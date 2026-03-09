@@ -32,10 +32,10 @@ resolver:
   # -- Enable DNS rebinding protection (blocks responses with private IPs from public names)
   # @section -- Resolver
   rebindingProtection: false
-  # -- Log domains that fail DNSSEC validation
+  # -- Log bogus (DNSSEC-invalid) answers
   # @section -- Resolver
   logBogus: true
-  # -- Serve expired cache entries when upstream is unreachable
+  # -- Serve expired cache entries when upstream fails
   # @section -- Resolver
   serveStale: true
   # -- Glue record checking mode: `normal`, `strict`, or `permissive`
@@ -81,26 +81,26 @@ cache:
   # @section -- Resolver
   # @default -- Knot Resolver default
   ttlMax: ""
-  # -- Prefetch expiring records before they expire
+  # -- Proactively refresh records nearing expiry
   # @section -- Resolver
   prefetchExpiring: false
-  # -- Enable predictive prefetch (learns query patterns, experimental). Set `true` for defaults or pass an object with `window` and `period` keys.
+  # -- Enable predictive prefetch (experimental). `true` for defaults or pass an object with `window` and `period` keys.
   # @section -- Resolver
   prefetchPrediction: false
-  # -- Prefill the cache with root zone data fetched over HTTPS (reduces cold-start latency).
+  # -- Prefill the cache with root zone data fetched over HTTPS.
   # Set `true` for sensible defaults or pass an object with `url`, `refreshInterval`, and optional `caFile`.
   # @section -- Resolver
   prefill: false
 
-# -- Raw Knot Resolver configuration — merged last, overrides everything
-# @section -- Resolver
+# -- Knot Resolver `config.yaml` — merged last, overrides everything
+# @section -- Escape Hatch
 configOverride: {}
 
 networkPolicy:
   # -- Create a network policy
   # @section -- Network Policy
   enabled: false
-  # -- Network policy flavor: `cilium` for CiliumNetworkPolicy, `kubernetes` for NetworkPolicy
+  # -- Network policy flavor: `cilium` or `kubernetes`
   # @section -- Network Policy
   flavor: cilium
   # -- Namespaces allowed to query Knot Resolver
@@ -109,10 +109,9 @@ networkPolicy:
   # -- Namespace allowed to scrape metrics
   # @section -- Network Policy
   metricsNamespace: monitoring
-  # -- Allow outbound DNS to the internet
+  # -- Allow outbound internet access (recursive resolution)
   # @section -- Network Policy
   egressToInternet: true
-
 
 # @ignored
 resources:
@@ -126,7 +125,7 @@ resources:
 service:
   # @ignored
   type: ClusterIP
-  # -- Static ClusterIP, pin to well-known IP address from ServiceCIDR
+  # -- Static ClusterIP for use in pod `dnsConfig.nameservers`
   # @section -- Service
   # @default -- auto-assigned
   clusterIP: ""
