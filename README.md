@@ -9,8 +9,9 @@ Uses the official [`cznic/knot-resolver`](https://hub.docker.com/r/cznic/knot-re
 ## Quick start
 
 ```bash
-# use x.x.x.53 for ClusterIP, or assign your own
-DNS_IP=$(kubectl get svc kubernetes -o jsonpath='{.spec.clusterIP}' | awk -F. '{print $1"."$2"."$3".53"}')
+# use x.x.x.53 for ClusterIP, or assign your well-known
+DNS_IP=$(kubectl get svc kubernetes -o jsonpath='{.spec.clusterIP}' | \
+  awk -F. '{print $1"."$2"."$3".53"}')
 
 helm repo add knot-resolver https://sargeant.github.io/helm-knot-resolver
 helm install knot-resolver knot-resolver/knot-resolver --set service.clusterIP=$DNS_IP
