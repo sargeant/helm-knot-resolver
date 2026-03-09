@@ -1,0 +1,27 @@
+[changelog]
+header = ""
+body = """
+{% for group, commits in commits | group_by(attribute="group") %}\
+{% for commit in commits -%}
+- kind: {{ group }}
+  description: {{ commit.message | split(pat="\n") | first | trim }}
+{% endfor %}\
+{% endfor %}
+"""
+footer = ""
+trim = false
+
+[git]
+conventional_commits = true
+filter_unconventional = false
+commit_parsers = [
+    { message = "^feat", group = "added" },
+    { message = "^fix", group = "fixed" },
+    { message = "^refactor", group = "changed" },
+    { message = "^doc", group = "changed" },
+    { message = "^chore\\(deps\\)", skip = true },
+    { message = "^chore: bump chart version", skip = true },
+    { message = "^chore|^ci", group = "changed" },
+]
+filter_commits = false
+sort_commits = "oldest"
