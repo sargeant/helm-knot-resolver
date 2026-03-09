@@ -34,6 +34,20 @@ jobs:
         env:
           OUTPUT: charts/knot-resolver/RELEASE-NOTES.md
 
+      - name: Generate ArtifactHub changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff-artifacthub.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: ARTIFACTHUB-CHANGES.yaml
+
+      - name: Inject ArtifactHub changelog into Chart.yaml
+        run: |
+          CHANGES=$(cat ARTIFACTHUB-CHANGES.yaml)
+          export CHANGES
+          yq -i '.annotations."artifacthub.io/changes" = strenv(CHANGES)' charts/knot-resolver/Chart.yaml
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1
         with:
