@@ -1,4 +1,4 @@
-Knot Resolver has been deployed in namespace {{ .Release.Namespace }}.
+Knot Resolver is running in namespace {{ .Release.Namespace }}.
 
 {{- $clusterIP := .Values.service.clusterIP }}
 {{- if not $clusterIP }}
@@ -9,14 +9,11 @@ Knot Resolver has been deployed in namespace {{ .Release.Namespace }}.
 {{- end }}
 
 {{- if $clusterIP }}
-DNS service: {{ $clusterIP }}:{{ .Values.service.port }}
+DNS ClusterIP: {{ $clusterIP }}
 
-Test it:
+Verify with:  helm test {{ .Release.Name }}
 
-  kubectl run -it --rm dns-test --image=busybox:1.36 --restart=Never \
-    -- nslookup example.com {{ $clusterIP }}
-
-Add to your pod spec:
+Add to each pod that should use Knot Resolver:
 
   spec:
     dnsPolicy: "None"
@@ -24,11 +21,16 @@ Add to your pod spec:
       nameservers:
         - "{{ $clusterIP }}"
       searches:
-        - {{ .Release.Namespace }}.svc.cluster.local
+        - NAMESPACE.svc.cluster.local
         - svc.cluster.local
         - cluster.local
+      options:
+        - name: ndots
+          value: "2"
+
+Replace NAMESPACE with the pod's namespace.
 {{- else }}
 DNS service: {{ include "knot-resolver.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
 
-Pin a ClusterIP with service.clusterIP for use in pod dnsConfig.nameservers (which requires an IP, not a hostname).
+Set service.clusterIP to a stable IP so pods can use it in dnsConfig.nameservers (which requires an IP, not a hostname).
 {{- end }}
