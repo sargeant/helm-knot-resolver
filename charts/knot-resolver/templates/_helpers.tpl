@@ -60,7 +60,7 @@ cache:
 
 {{/*
 Resolve the kube-dns ClusterIP. Uses the explicit value if set, otherwise attempts
-lookup from the cluster, falling back to the conventional 10.96.0.10.
+lookup from the cluster. Fails if neither is available.
 */}}
 {{- define "knot-resolver.kubeDNSIP" -}}
 {{- if .Values.forwarding.kubeDNS.clusterIP }}
@@ -70,7 +70,7 @@ lookup from the cluster, falling back to the conventional 10.96.0.10.
 {{- if $svc }}
 {{- $svc.spec.clusterIP }}
 {{- else }}
-{{- "10.96.0.10" }}
+{{- fail "Cannot auto-detect kube-dns ClusterIP (lookup unavailable during template/dry-run). Set forwarding.kubeDNS.clusterIP explicitly, or disable with forwarding.kubeDNS.enabled=false." }}
 {{- end }}
 {{- end }}
 {{- end }}
