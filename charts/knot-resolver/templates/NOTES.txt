@@ -1,4 +1,5 @@
 Knot Resolver has been deployed in namespace {{ .Release.Namespace }}.
+
 {{- $clusterIP := .Values.service.clusterIP }}
 {{- if not $clusterIP }}
 {{- $svc := (lookup "v1" "Service" .Release.Namespace (include "knot-resolver.fullname" .)) }}

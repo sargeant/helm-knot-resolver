@@ -8,20 +8,15 @@ Uses the official [`cznic/knot-resolver`](https://hub.docker.com/r/cznic/knot-re
 
 ## Quick start
 
+Assign a stable ClusterIP so pods can reference it in `dnsConfig.nameservers`. The snippet below derives `.53` from your cluster's Service CIDR — pick any unused address in range.
+
 ```bash
-# use x.x.x.53 for ClusterIP, or assign your well-known
 DNS_IP=$(kubectl get svc kubernetes -o jsonpath='{.spec.clusterIP}' | \
   awk -F. '{print $1"."$2"."$3".53"}')
 
 helm repo add knot-resolver https://sargeant.github.io/helm-knot-resolver
 helm install knot-resolver knot-resolver/knot-resolver --set service.clusterIP=$DNS_IP
-```
-
-Test it:
-
-```bash
-kubectl run dns-test --rm -it --image=busybox:1.36 --restart=Never \
-  -- nslookup example.com $DNS_IP
+helm test knot-resolver
 ```
 
 To also resolve cluster-internal names (`*.svc.cluster.local`), enable kube-dns forwarding:
@@ -32,18 +27,21 @@ helm upgrade knot-resolver knot-resolver/knot-resolver \
   --set forwarding.kubeDNS.enabled=true
 ```
 
-Then configure pods with a full `dnsConfig:` including your namespace:
+Then configure pods — `dnsPolicy: "None"` stops the kubelet overriding nameservers, so the pod uses exactly the `dnsConfig` you provide:
 
 ```yaml
 spec:
   dnsPolicy: "None"
   dnsConfig:
     nameservers:
-      - "<DNS_IP>"
+      - "DNS_IP"
     searches:
-      - $NAMESPACE.svc.cluster.local
+      - NAMESPACE.svc.cluster.local
       - svc.cluster.local
       - cluster.local
+    options:
+      - name: ndots
+        value: "2"
 ```
 
 ## Documentation
