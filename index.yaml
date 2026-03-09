@@ -5,6 +5,41 @@ entries:
       artifacthub.io/category: networking
       artifacthub.io/changes: |-
         - kind: added
+          description: refactored config templates, added new values, cleaned up documentation
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: Knot Resolver docs
+          url: https://www.knot-resolver.cz/documentation/latest/
+        - name: support
+          url: https://github.com/sargeant/helm-knot-resolver/issues
+    apiVersion: v2
+    appVersion: v6.2.0
+    created: "2026-03-09T10:57:15.899544296Z"
+    description: Caching DNSSEC-validating DNS resolver
+    digest: 0d0326ad6f28cbb0e2ce242a82e33158b7df0743a1fdcbb6086d4ed813826c87
+    home: https://www.knot-resolver.cz/
+    keywords:
+    - dns
+    - resolver
+    - dnssec
+    - knot-resolver
+    - kresd
+    kubeVersion: '>=1.23.0-0'
+    maintainers:
+    - email: sam@sargeant.net.nz
+      name: Sam Sargeant
+      url: https://github.com/sargeant
+    name: knot-resolver
+    sources:
+    - https://github.com/CZ-NIC/knot-resolver
+    type: application
+    urls:
+    - https://github.com/sargeant/helm-knot-resolver/releases/download/knot-resolver-0.7.0/knot-resolver-0.7.0.tgz
+    version: 0.7.0
+  - annotations:
+      artifacthub.io/category: networking
+      artifacthub.io/changes: |-
+        - kind: added
           description: automate ArtifactHub changelog from conventional commits
         - kind: fixed
           description: install yq in release workflow for ArtifactHub changelog injection (#13)
@@ -162,4 +197,4 @@ entries:
     urls:
     - https://github.com/sargeant/helm-knot-resolver/releases/download/knot-resolver-0.4.0/knot-resolver-0.4.0.tgz
     version: 0.4.0
-generated: "2026-03-09T07:47:19.902371608Z"
+generated: "2026-03-09T10:57:15.899569343Z"
