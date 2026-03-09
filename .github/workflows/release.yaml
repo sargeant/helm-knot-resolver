@@ -26,10 +26,19 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
 
+      - name: Generate release notes
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: charts/knot-resolver/RELEASE-NOTES.md
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1
         with:
           charts_dir: charts
+          config: cr.yaml
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 

@@ -2,7 +2,7 @@ apiVersion: v2
 name: knot-resolver
 description: Caching DNSSEC-validating DNS resolver
 type: application
-version: 0.4.5
+version: 0.4.6
 kubeVersion: ">=1.23.0-0"
 appVersion: "v6.2.0"
 home: https://www.knot-resolver.cz/
@@ -21,3 +21,11 @@ maintainers:
 annotations:
   artifacthub.io/category: networking
   artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: |
+    - name: Knot Resolver docs
+      url: https://www.knot-resolver.cz/documentation/latest/
+    - name: support
+      url: https://github.com/sargeant/helm-knot-resolver/issues
+  artifacthub.io/changes: |
+    - kind: changed
+      description: In development
