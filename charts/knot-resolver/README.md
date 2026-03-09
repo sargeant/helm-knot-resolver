@@ -1,6 +1,6 @@
 # knot-resolver
 
-![Version: 0.4.8](https://img.shields.io/badge/Version-0.4.8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v6.2.0](https://img.shields.io/badge/AppVersion-v6.2.0-informational?style=flat-square)
+![Version: 0.5.0](https://img.shields.io/badge/Version-0.5.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v6.2.0](https://img.shields.io/badge/AppVersion-v6.2.0-informational?style=flat-square)
 
 Caching DNSSEC-validating DNS resolver
 
@@ -62,7 +62,7 @@ spec:
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | forwarding.kubeDNS.enabled | bool | `false` | Forward `cluster.local` queries to kube-dns |
-| forwarding.kubeDNS.clusterIP | string | auto-detected | kube-dns Service IP (auto-detected if empty, falls back to 10.96.0.10) |
+| forwarding.kubeDNS.clusterIP | string | auto-detected | kube-dns Service IP (auto-detected from cluster; required when using `helm template` or `--dry-run`) |
 | forwarding.upstream.enabled | bool | `false` | Use a DoT upstream instead of recursive resolution |
 | forwarding.upstream.provider | string | `"quad9"` | DNS provider: `quad9`, `cloudflare`, or `google` |
 | forwarding.zones | list | `[]` | Additional forward zones (raw Knot Resolver `forward` entries). Appended after the auto-injected `cluster.local` zone. |

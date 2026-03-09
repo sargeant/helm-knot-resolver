@@ -12,7 +12,7 @@ forwarding:
     # -- Forward `cluster.local` queries to kube-dns
     # @section -- Forwarding
     enabled: false
-    # -- kube-dns Service IP (auto-detected if empty, falls back to 10.96.0.10)
+    # -- kube-dns Service IP (auto-detected from cluster; required when using `helm template` or `--dry-run`)
     # @section -- Forwarding
     # @default -- auto-detected
     clusterIP: ""
