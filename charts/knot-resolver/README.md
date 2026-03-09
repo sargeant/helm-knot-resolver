@@ -1,6 +1,6 @@
 # knot-resolver
 
-![Version: 0.7.0](https://img.shields.io/badge/Version-0.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v6.2.0](https://img.shields.io/badge/AppVersion-v6.2.0-informational?style=flat-square)
+![Version: 0.7.1](https://img.shields.io/badge/Version-0.7.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v6.2.0](https://img.shields.io/badge/AppVersion-v6.2.0-informational?style=flat-square)
 
 Caching DNSSEC-validating DNS resolver
 
@@ -133,6 +133,20 @@ configOverride:
 | networkPolicy.metricsNamespace | string | `"monitoring"` | Namespace allowed to scrape metrics |
 | networkPolicy.egressToInternet | bool | `true` | Allow outbound internet access (recursive resolution) |
 
+### Deployment
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| resources | object | `{"limits":{"cpu":"500m","memory":"256Mi"},"requests":{"cpu":"50m","memory":"128Mi"}}` | Resource requests and limits |
+| replicaCount | int | `1` | Number of Knot Resolver pods to run |
+| extraVolumes | list | `[]` | Extra volumes for the pod (e.g. RPZ blocklists, custom Lua scripts, TLS certs) |
+| extraVolumeMounts | list | `[]` | Extra volume mounts for the resolver container |
+| defaultAntiAffinity.enabled | bool | `true` | Enable default anti-affinity rule |
+| defaultAntiAffinity.topologyKey | string | `"kubernetes.io/hostname"` | Topology key for anti-affinity (e.g. `kubernetes.io/hostname`, `topology.kubernetes.io/zone`) |
+| defaultAntiAffinity.type | string | `"preferred"` | Anti-affinity type: `preferred` or `required` |
+| podDisruptionBudget.enabled | bool | `false` | Create a PodDisruptionBudget |
+| podDisruptionBudget.minAvailable | int | `1` | Minimum number of available pods |
+
 ### Service
 
 | Key | Type | Default | Description |
@@ -147,17 +161,23 @@ configOverride:
 | metrics.enabled | bool | `true` | Create a metrics Service |
 | metrics.port | int | `5000` | Metrics service port |
 | metrics.serviceMonitor.enabled | bool | `false` | Create a Prometheus ServiceMonitor |
+| metrics.serviceMonitor.labels | object | `{}` | Labels to add to the ServiceMonitor (e.g. to match a Prometheus selector) |
+| metrics.serviceMonitor.interval | string | Prometheus default | Scrape interval override (e.g. `30s`) |
 | metrics.serviceMonitor.namespaceSelector | object | same namespace only | Namespace selector for cross-namespace Prometheus discovery (e.g. `{matchNames: ["knot"]}`) |
 
-### Deployment
+### Image
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| replicaCount | int | `1` | Number of Knot Resolver pods to run |
-| extraVolumes | list | `[]` | Extra volumes for the pod (e.g. RPZ blocklists, custom Lua scripts, TLS certs) |
-| extraVolumeMounts | list | `[]` | Extra volume mounts for the resolver container |
-| podDisruptionBudget.enabled | bool | `false` | Create a PodDisruptionBudget |
-| podDisruptionBudget.minAvailable | int | `1` | Minimum number of available pods |
+| image.repository | string | `"cznic/knot-resolver"` | Container image repository |
+| image.tag | string | chart appVersion | Image tag (defaults to the chart's `appVersion`) |
+| image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
+
+### Other Values
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| defaultAntiAffinity | object | `{"enabled":true,"topologyKey":"kubernetes.io/hostname","type":"preferred"}` | Built-in pod anti-affinity to spread replicas across nodes |
 
 ## Maintainers
 

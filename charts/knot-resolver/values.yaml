@@ -120,7 +120,8 @@ networkPolicy:
   # @section -- Network Policy
   egressToInternet: true
 
-# @ignored
+# -- Resource requests and limits
+# @section -- Deployment
 resources:
   requests:
     cpu: 50m
@@ -157,9 +158,12 @@ metrics:
     # -- Create a Prometheus ServiceMonitor
     # @section -- Monitoring
     enabled: false
-    # @ignored
+    # -- Labels to add to the ServiceMonitor (e.g. to match a Prometheus selector)
+    # @section -- Monitoring
     labels: {}
-    # @ignored
+    # -- Scrape interval override (e.g. `30s`)
+    # @section -- Monitoring
+    # @default -- Prometheus default
     interval: ""
     # @ignored
     path: /metrics/prometheus
@@ -186,10 +190,16 @@ extraVolumes: []
 # @section -- Deployment
 extraVolumeMounts: []
 
-# @ignored
 image:
+  # -- Container image repository
+  # @section -- Image
   repository: cznic/knot-resolver
+  # -- Image tag (defaults to the chart's `appVersion`)
+  # @section -- Image
+  # @default -- chart appVersion
   tag: ""
+  # -- Image pull policy
+  # @section -- Image
   pullPolicy: IfNotPresent
 
 # @ignored
@@ -230,10 +240,16 @@ podLabels: {}
 nodeSelector: {}
 # @ignored
 tolerations: []
-# @ignored
+# -- Built-in pod anti-affinity to spread replicas across nodes
 defaultAntiAffinity:
+  # -- Enable default anti-affinity rule
+  # @section -- Deployment
   enabled: true
+  # -- Topology key for anti-affinity (e.g. `kubernetes.io/hostname`, `topology.kubernetes.io/zone`)
+  # @section -- Deployment
   topologyKey: kubernetes.io/hostname
+  # -- Anti-affinity type: `preferred` or `required`
+  # @section -- Deployment
   type: preferred
 
 # @ignored
