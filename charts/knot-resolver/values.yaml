@@ -29,32 +29,34 @@ forwarding:
   zones: []
 
 resolver:
-  # -- Enable DNS rebinding protection (blocks responses with private IPs from public names)
+  # -- Enable DNS rebinding protection
   # @section -- Resolver
   rebindingProtection: false
-  # -- Log bogus (DNSSEC-invalid) answers
-  # @section -- Resolver
-  logBogus: true
   # -- Serve expired cache entries when upstream fails
   # @section -- Resolver
   serveStale: true
-  # -- Glue record checking mode: `normal`, `strict`, or `permissive`
-  # @section -- Resolver
-  glueChecking: normal
   # -- Enable DNSSEC validation
   # @section -- Resolver
   dnssec: true
-  # -- Domains to skip DNSSEC validation for (e.g. broken signed domains)
+  # -- Log DNSSEC bogus (validation failure) events
   # @section -- Resolver
-  dnssecNegativeTrustAnchors: []
-  # -- Detect system clock vs DNSSEC signature time skew on root NS records
+  logBogus: false
+  # -- Domains to exempt from DNSSEC validation
   # @section -- Resolver
-  # @default -- Knot Resolver default (`true`)
-  timeJumpDetection: ""
-  # -- Enable workarounds for known DNS protocol violators
+  negativeTrustAnchors: []
+  # -- Glue record checking mode: `normal`, `strict`, or `permissive`
   # @section -- Resolver
-  # @default -- Knot Resolver default (`false`)
-  violatorsWorkarounds: ""
+  # @default -- Knot Resolver default
+  glueChecking: ""
+  # -- Enable workarounds for non-compliant authoritative servers
+  # @section -- Resolver
+  violatorsWorkarounds: false
+  # -- QNAME minimisation for upstream privacy (RFC 9156)
+  # @section -- Resolver
+  minimize: true
+  # -- Enable detection of system time jumps
+  # @section -- Resolver
+  timeJumpDetection: true
   # -- Number of resolver worker processes (`auto` or a number)
   # @section -- Resolver
   # @default -- Knot Resolver default
@@ -65,7 +67,7 @@ logging:
   # @section -- Logging
   # @default -- Knot Resolver default (`notice`)
   level: ""
-  # -- Subsystems that get debug-level logging regardless of the global level (e.g. `["dnssec", "cache"]`)
+  # -- Log groups to enable (e.g. `[dnssec, cache]`)
   # @section -- Logging
   groups: []
 
@@ -73,28 +75,33 @@ cache:
   # -- Size of the in-memory DNS cache (sets both `cache.size-max` and the emptyDir sizeLimit)
   # @section -- Resolver
   sizeLimit: 128Mi
-  # -- Minimum TTL for cached records (integer seconds or duration string like `60s`, `1m`)
+  # -- Minimum TTL for cached records (e.g. `60s`, `1h`)
   # @section -- Resolver
   # @default -- Knot Resolver default
   ttlMin: ""
-  # -- Maximum TTL for cached records (integer seconds or duration string like `86400s`, `24h`)
+  # -- Maximum TTL for cached records (e.g. `86400s`, `24h`)
   # @section -- Resolver
   # @default -- Knot Resolver default
   ttlMax: ""
-  # -- Proactively refresh records nearing expiry
+  # -- Prefetch expiring cache entries before they expire
   # @section -- Resolver
   prefetchExpiring: false
-  # -- Enable predictive prefetch (experimental). `true` for defaults or pass an object with `window` and `period` keys.
-  # @section -- Resolver
-  prefetchPrediction: false
-  # -- Prefill the cache with root zone data fetched over HTTPS.
-  # Set `true` for sensible defaults or pass an object with `url`, `refreshInterval`, and optional `caFile`.
-  # @section -- Resolver
-  prefill: false
 
-# -- Knot Resolver `config.yaml` — merged last, overrides everything
+# -- Knot Resolver config merged last, overrides everything.
+# Use this for any setting not exposed as a first-class value.
+# See [config reference](https://www.knot-resolver.cz/documentation/latest/config-overview.html).
 # @section -- Escape Hatch
 configOverride: {}
+# @section -- Escape Hatch
+# @ignored
+# configOverride:
+#   cache:
+#     prefetch:
+#       prediction: {}
+#     prefill:
+#       - origin: "."
+#         url: https://www.internic.net/domain/root.zone
+#         refresh-interval: 1d
 
 networkPolicy:
   # -- Create a network policy

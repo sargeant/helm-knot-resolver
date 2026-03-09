@@ -1,6 +1,6 @@
 # knot-resolver
 
-![Version: 0.6.1](https://img.shields.io/badge/Version-0.6.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v6.2.0](https://img.shields.io/badge/AppVersion-v6.2.0-informational?style=flat-square)
+![Version: 0.7.0](https://img.shields.io/badge/Version-0.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v6.2.0](https://img.shields.io/badge/AppVersion-v6.2.0-informational?style=flat-square)
 
 Caching DNSSEC-validating DNS resolver
 
@@ -53,6 +53,23 @@ Use `ndots:5` if you need short three-segment internal names like `myapp.prod.sv
 
 By default, pods use `dnsPolicy: ClusterFirst`, which has the kubelet inject the cluster DNS service as the sole nameserver — overriding any `dnsConfig.nameservers` you set. `dnsPolicy: "None"` stops that override, so the pod uses exactly the `dnsConfig` you provide.
 
+## Custom configuration
+
+The chart exposes a handful of first-class values (`resolver.*`, `logging.level`, `cache.sizeLimit`). For anything else, use `configOverride` — it is merged last and accepts any valid [Knot Resolver config](https://www.knot-resolver.cz/documentation/latest/config-overview.html):
+
+```yaml
+configOverride:
+  cache:
+    ttl-min: 60s
+    ttl-max: 86400s
+    prefetch:
+      expiring: true
+  dnssec:
+    log-bogus: true
+  options:
+    glue-checking: strict
+```
+
 ## Caveats
 
 - **Don't point your GitOps tool at Knot Resolver**. If ArgoCD/Flux deploys+queries Knot Resolver and it goes down, you can't redeploy.
@@ -75,34 +92,33 @@ By default, pods use `dnsPolicy: ClusterFirst`, which has the kubelet inject the
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| resolver.rebindingProtection | bool | `false` | Enable DNS rebinding protection (blocks responses with private IPs from public names) |
-| resolver.logBogus | bool | `true` | Log bogus (DNSSEC-invalid) answers |
+| resolver.rebindingProtection | bool | `false` | Enable DNS rebinding protection |
 | resolver.serveStale | bool | `true` | Serve expired cache entries when upstream fails |
-| resolver.glueChecking | string | `"normal"` | Glue record checking mode: `normal`, `strict`, or `permissive` |
 | resolver.dnssec | bool | `true` | Enable DNSSEC validation |
-| resolver.dnssecNegativeTrustAnchors | list | `[]` | Domains to skip DNSSEC validation for (e.g. broken signed domains) |
-| resolver.timeJumpDetection | string | Knot Resolver default (`true`) | Detect system clock vs DNSSEC signature time skew on root NS records |
-| resolver.violatorsWorkarounds | string | Knot Resolver default (`false`) | Enable workarounds for known DNS protocol violators |
+| resolver.logBogus | bool | `false` | Log DNSSEC bogus (validation failure) events |
+| resolver.negativeTrustAnchors | list | `[]` | Domains to exempt from DNSSEC validation |
+| resolver.glueChecking | string | Knot Resolver default | Glue record checking mode: `normal`, `strict`, or `permissive` |
+| resolver.violatorsWorkarounds | bool | `false` | Enable workarounds for non-compliant authoritative servers |
+| resolver.minimize | bool | `true` | QNAME minimisation for upstream privacy (RFC 9156) |
+| resolver.timeJumpDetection | bool | `true` | Enable detection of system time jumps |
 | resolver.workers | string | Knot Resolver default | Number of resolver worker processes (`auto` or a number) |
 | cache.sizeLimit | string | `"128Mi"` | Size of the in-memory DNS cache (sets both `cache.size-max` and the emptyDir sizeLimit) |
-| cache.ttlMin | string | Knot Resolver default | Minimum TTL for cached records (integer seconds or duration string like `60s`, `1m`) |
-| cache.ttlMax | string | Knot Resolver default | Maximum TTL for cached records (integer seconds or duration string like `86400s`, `24h`) |
-| cache.prefetchExpiring | bool | `false` | Proactively refresh records nearing expiry |
-| cache.prefetchPrediction | bool | `false` | Enable predictive prefetch (experimental). `true` for defaults or pass an object with `window` and `period` keys. |
-| cache.prefill | bool | `false` | Prefill the cache with root zone data fetched over HTTPS. Set `true` for sensible defaults or pass an object with `url`, `refreshInterval`, and optional `caFile`. |
+| cache.ttlMin | string | Knot Resolver default | Minimum TTL for cached records (e.g. `60s`, `1h`) |
+| cache.ttlMax | string | Knot Resolver default | Maximum TTL for cached records (e.g. `86400s`, `24h`) |
+| cache.prefetchExpiring | bool | `false` | Prefetch expiring cache entries before they expire |
 
 ### Logging
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | logging.level | string | Knot Resolver default (`notice`) | Global log level (`crit`, `err`, `warning`, `notice`, `info`, `debug`) |
-| logging.groups | list | `[]` | Subsystems that get debug-level logging regardless of the global level (e.g. `["dnssec", "cache"]`) |
+| logging.groups | list | `[]` | Log groups to enable (e.g. `[dnssec, cache]`) |
 
 ### Escape Hatch
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| configOverride | object | `{}` | Knot Resolver `config.yaml` — merged last, overrides everything |
+| configOverride | object | `{}` | Knot Resolver config merged last, overrides everything. Use this for any setting not exposed as a first-class value. See [config reference](https://www.knot-resolver.cz/documentation/latest/config-overview.html). |
 
 ### Network Policy
 

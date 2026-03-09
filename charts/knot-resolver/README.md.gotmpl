@@ -53,6 +53,23 @@ Use `ndots:5` if you need short three-segment internal names like `myapp.prod.sv
 
 By default, pods use `dnsPolicy: ClusterFirst`, which has the kubelet inject the cluster DNS service as the sole nameserver — overriding any `dnsConfig.nameservers` you set. `dnsPolicy: "None"` stops that override, so the pod uses exactly the `dnsConfig` you provide.
 
+## Custom configuration
+
+The chart exposes a handful of first-class values (`resolver.*`, `logging.level`, `cache.sizeLimit`). For anything else, use `configOverride` — it is merged last and accepts any valid [Knot Resolver config](https://www.knot-resolver.cz/documentation/latest/config-overview.html):
+
+```yaml
+configOverride:
+  cache:
+    ttl-min: 60s
+    ttl-max: 86400s
+    prefetch:
+      expiring: true
+  dnssec:
+    log-bogus: true
+  options:
+    glue-checking: strict
+```
+
 ## Caveats
 
 - **Don't point your GitOps tool at Knot Resolver**. If ArgoCD/Flux deploys+queries Knot Resolver and it goes down, you can't redeploy.
