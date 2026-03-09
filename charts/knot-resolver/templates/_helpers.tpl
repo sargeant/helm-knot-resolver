@@ -41,10 +41,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Base config managed by the chart. Ports are derived from values to stay in sync
-with containerPort definitions. Can be overridden via configOverride.
+Complete chart-managed config: base settings, first-class values, and forward zones.
+configOverride is applied on top of this in configmap.yaml.
 */}}
-{{- define "knot-resolver.baseConfig" -}}
+{{- define "knot-resolver.managedConfig" -}}
 network:
   listen:
     - interface:
@@ -56,6 +56,58 @@ monitoring:
   metrics: always
 cache:
   size-max: {{ .Values.cache.sizeLimit | trimSuffix "i" }}
+{{- if .Values.cache.ttlMin }}
+  ttl-min: {{ .Values.cache.ttlMin }}
+{{- end }}
+{{- if .Values.cache.ttlMax }}
+  ttl-max: {{ .Values.cache.ttlMax }}
+{{- end }}
+{{- if .Values.cache.prefetchExpiring }}
+  prefetch:
+    expiring: {{ .Values.cache.prefetchExpiring }}
+{{- end }}
+options:
+  minimize: {{ .Values.resolver.minimize }}
+  rebinding-protection: {{ .Values.resolver.rebindingProtection }}
+  serve-stale: {{ .Values.resolver.serveStale }}
+  time-jump-detection: {{ .Values.resolver.timeJumpDetection }}
+{{- if .Values.resolver.glueChecking }}
+{{- $valid := list "normal" "strict" "permissive" -}}
+{{- if not (has .Values.resolver.glueChecking $valid) }}
+{{- fail (printf "resolver.glueChecking must be one of: normal, strict, permissive (got %q)" .Values.resolver.glueChecking) }}
+{{- end }}
+  glue-checking: {{ .Values.resolver.glueChecking }}
+{{- end }}
+{{- if .Values.resolver.violatorsWorkarounds }}
+  violators-workarounds: {{ .Values.resolver.violatorsWorkarounds }}
+{{- end }}
+dnssec:
+  enable: {{ .Values.resolver.dnssec }}
+{{- if .Values.resolver.logBogus }}
+  log-bogus: {{ .Values.resolver.logBogus }}
+{{- end }}
+{{- if .Values.resolver.negativeTrustAnchors }}
+  negative-trust-anchors:
+    {{- toYaml .Values.resolver.negativeTrustAnchors | nindent 4 }}
+{{- end }}
+{{- if or .Values.logging.level .Values.logging.groups }}
+logging:
+{{- if .Values.logging.level }}
+  level: {{ .Values.logging.level }}
+{{- end }}
+{{- if .Values.logging.groups }}
+  groups:
+    {{- toYaml .Values.logging.groups | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- if .Values.resolver.workers }}
+{{- if eq (toString .Values.resolver.workers) "auto" }}
+workers: auto
+{{- else }}
+workers: {{ .Values.resolver.workers | int }}
+{{- end }}
+{{- end }}
+{{ include "knot-resolver.forwardZones" . }}
 {{- end }}
 
 {{/*
@@ -76,27 +128,20 @@ lookup from the cluster. Fails if neither is available.
 {{- end }}
 
 {{/*
-Build the kube-dns forward subtree for cluster.local when forwarding.kubeDNS.enabled is true.
-Returns a dict with a forward list entry, ready to merge into the config.
+Build the forward zone list from kubeDNS, upstream, and user-defined zones.
 */}}
-{{- define "knot-resolver.kubeDNSForward" -}}
+{{- define "knot-resolver.forwardZones" -}}
+{{- $forwardList := list -}}
 {{- if .Values.forwarding.kubeDNS.enabled }}
-forward:
-  - subtree: cluster.local.
-    servers:
-      - address:
-          - {{ printf "%s@53" (include "knot-resolver.kubeDNSIP" . | trim) | quote }}
-    options:
-      dnssec: false
-      authoritative: true
+{{- $forwardList = append $forwardList (dict
+  "subtree" "cluster.local."
+  "servers" (list (dict "address" (list (printf "%s@53" (include "knot-resolver.kubeDNSIP" . | trim)))))
+  "options" (dict "dnssec" false "authoritative" true)
+) -}}
 {{- end }}
+{{- range .Values.forwarding.zones }}
+{{- $forwardList = append $forwardList . -}}
 {{- end }}
-
-{{/*
-Build an upstream DoT forward subtree for a well-known provider.
-Returns a forward list entry with transport: tls when forwarding.upstream.enabled is true.
-*/}}
-{{- define "knot-resolver.upstreamForward" -}}
 {{- if .Values.forwarding.upstream.enabled }}
 {{- $providers := dict
   "quad9" (dict "addresses" (list "9.9.9.9" "149.112.112.112" "2620:fe::fe" "2620:fe::9") "hostname" "dns.quad9.net")
@@ -107,82 +152,13 @@ Returns a forward list entry with transport: tls when forwarding.upstream.enable
 {{- if not $provider }}
 {{- fail (printf "forwarding.upstream.provider must be one of: quad9, cloudflare, google (got %q)" .Values.forwarding.upstream.provider) }}
 {{- end }}
+{{- $forwardList = append $forwardList (dict
+  "subtree" "."
+  "servers" (list (dict "address" $provider.addresses "transport" "tls" "hostname" $provider.hostname))
+) -}}
+{{- end }}
+{{- if $forwardList }}
 forward:
-  - subtree: "."
-    servers:
-      - address:
-          {{- range $provider.addresses }}
-          - {{ . | quote }}
-          {{- end }}
-        transport: tls
-        hostname: {{ $provider.hostname }}
+  {{- toYaml $forwardList | nindent 2 }}
 {{- end }}
-{{- end }}
-
-{{/*
-Build resolver config from first-class values. Boolean toggles are always
-emitted explicitly to avoid depending on upstream defaults.
-*/}}
-{{- define "knot-resolver.firstClassConfig" -}}
-{{- $cfg := dict -}}
-{{- $_ := set $cfg "options" (mustMergeOverwrite (default dict (get $cfg "options")) (dict "rebinding-protection" .Values.resolver.rebindingProtection)) -}}
-{{- $_ := set $cfg "options" (mustMergeOverwrite (default dict (get $cfg "options")) (dict "serve-stale" .Values.resolver.serveStale)) -}}
-{{- if kindIs "bool" .Values.resolver.timeJumpDetection -}}
-{{- $_ := set $cfg "options" (mustMergeOverwrite (default dict (get $cfg "options")) (dict "time-jump-detection" .Values.resolver.timeJumpDetection)) -}}
-{{- end -}}
-{{- if kindIs "bool" .Values.resolver.violatorsWorkarounds -}}
-{{- $_ := set $cfg "options" (mustMergeOverwrite (default dict (get $cfg "options")) (dict "violators-workarounds" .Values.resolver.violatorsWorkarounds)) -}}
-{{- end -}}
-{{- $glue := .Values.resolver.glueChecking -}}
-{{- if kindIs "bool" $glue -}}
-{{- $glue = ternary "normal" "permissive" $glue -}}
-{{- end -}}
-{{- $_ := set $cfg "options" (mustMergeOverwrite (default dict (get $cfg "options")) (dict "glue-checking" $glue)) -}}
-{{- $_ := set $cfg "dnssec" (mustMergeOverwrite (default dict (get $cfg "dnssec")) (dict "log-bogus" .Values.resolver.logBogus)) -}}
-{{- $_ := set $cfg "dnssec" (mustMergeOverwrite (default dict (get $cfg "dnssec")) (dict "enable" .Values.resolver.dnssec)) -}}
-{{- if .Values.resolver.dnssecNegativeTrustAnchors }}
-{{- $_ := set $cfg "dnssec" (mustMergeOverwrite (default dict (get $cfg "dnssec")) (dict "negative-trust-anchors" .Values.resolver.dnssecNegativeTrustAnchors)) -}}
-{{- end }}
-{{- if .Values.logging.level }}
-{{- $_ := set $cfg "logging" (mustMergeOverwrite (default dict (get $cfg "logging")) (dict "level" .Values.logging.level)) -}}
-{{- end }}
-{{- if .Values.logging.groups }}
-{{- $_ := set $cfg "logging" (mustMergeOverwrite (default dict (get $cfg "logging")) (dict "groups" .Values.logging.groups)) -}}
-{{- end }}
-{{- if .Values.cache.ttlMin }}
-{{- $ttlMin := .Values.cache.ttlMin -}}
-{{- if not (regexMatch "[a-z]+$" (toString $ttlMin)) -}}{{- $ttlMin = printf "%ds" (int (toString $ttlMin)) -}}{{- end -}}
-{{- $_ := set $cfg "cache" (mustMergeOverwrite (default dict (get $cfg "cache")) (dict "ttl-min" $ttlMin)) -}}
-{{- end }}
-{{- if .Values.cache.ttlMax }}
-{{- $ttlMax := .Values.cache.ttlMax -}}
-{{- if not (regexMatch "[a-z]+$" (toString $ttlMax)) -}}{{- $ttlMax = printf "%ds" (int (toString $ttlMax)) -}}{{- end -}}
-{{- $_ := set $cfg "cache" (mustMergeOverwrite (default dict (get $cfg "cache")) (dict "ttl-max" $ttlMax)) -}}
-{{- end }}
-{{- $prefetch := dict "expiring" .Values.cache.prefetchExpiring -}}
-{{- if .Values.cache.prefetchPrediction -}}
-{{- $prediction := .Values.cache.prefetchPrediction -}}
-{{- if kindIs "bool" $prediction -}}
-{{- $prediction = dict -}}
-{{- end -}}
-{{- $_ := set $prefetch "prediction" $prediction -}}
-{{- end -}}
-{{- $_ := set $cfg "cache" (mustMergeOverwrite (default dict (get $cfg "cache")) (dict "prefetch" $prefetch)) -}}
-{{- if .Values.cache.prefill -}}
-{{- $prefillEntry := .Values.cache.prefill -}}
-{{- if kindIs "bool" $prefillEntry -}}
-{{- $prefillEntry = dict "origin" "." "url" "https://www.internic.net/domain/root.zone" "refresh-interval" "1d" -}}
-{{- end -}}
-{{- $_ := set $cfg "cache" (mustMergeOverwrite (default dict (get $cfg "cache")) (dict "prefill" (list $prefillEntry))) -}}
-{{- end -}}
-{{- if .Values.resolver.workers }}
-{{- if eq (typeOf .Values.resolver.workers) "string" }}
-{{- if eq .Values.resolver.workers "auto" }}
-{{- $_ := set $cfg "workers" "auto" -}}
-{{- end }}
-{{- else }}
-{{- $_ := set $cfg "workers" (.Values.resolver.workers | int) -}}
-{{- end }}
-{{- end }}
-{{- toYaml $cfg -}}
 {{- end }}

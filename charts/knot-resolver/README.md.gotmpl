@@ -16,7 +16,7 @@ Opt-in DNSSEC-validating DNS alongside CoreDNS. Pods set `dnsPolicy: None` point
 
 ## Install
 
-Assign a stable ClusterIP so pods can reference it in `dnsConfig.nameservers`. The snippet below derives `.53` from your cluster's Service CIDR — pick any unused address in range.
+Assign a stable ClusterIP so pods can reference it in `dnsConfig.nameservers`. The snippet below derives `.53` from your cluster's Service CIDR. Pick any unused address in range.
 
 ```bash
 DNS_IP=$(kubectl get svc kubernetes -o jsonpath='{.spec.clusterIP}' | \
@@ -51,7 +51,27 @@ spec:
 
 Use `ndots:5` if you need short three-segment internal names like `myapp.prod.svc` to resolve without a trailing dot.
 
-By default, pods use `dnsPolicy: ClusterFirst`, which has the kubelet inject the cluster DNS service as the sole nameserver — overriding any `dnsConfig.nameservers` you set. `dnsPolicy: "None"` stops that override, so the pod uses exactly the `dnsConfig` you provide.
+By default, pods use `dnsPolicy: ClusterFirst`, which has the kubelet inject the cluster DNS service as the sole nameserver, overriding any `dnsConfig.nameservers` you set. Setting `dnsPolicy: "None"` stops that override so the pod uses exactly the `dnsConfig` you provide.
+
+## Custom configuration
+
+The chart exposes common settings as first-class values (`resolver.*`, `logging.*`, `cache.*`). For anything else, use `configOverride`. It is merged last and accepts any valid [Knot Resolver config](https://www.knot-resolver.cz/documentation/latest/config-overview.html):
+
+```yaml
+configOverride:
+  cache:
+    prefetch:
+      prediction:
+        enable: true
+        window: 15m
+    prefill:
+      - origin: "."
+        url: https://www.internic.net/domain/root.zone
+        refresh-interval: 1d
+  local-data:
+    addresses:
+      myhost.example.com: 192.168.1.1
+```
 
 ## Caveats
 

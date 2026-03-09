@@ -4,20 +4,29 @@ forwarding:
 
 resolver:
   rebindingProtection: true
-  logBogus: true
   serveStale: true
-  glueChecking: normal
   dnssec: true
+  logBogus: true
+  glueChecking: normal
+  violatorsWorkarounds: true
+  timeJumpDetection: true
 
 logging:
   level: info
+  groups:
+    - dnssec
+    - cache
 
 cache:
   sizeLimit: 128Mi
-  ttlMin: 60
-  ttlMax: 86400
+  ttlMin: 60s
+  ttlMax: 86400s
   prefetchExpiring: true
-  prefetchPrediction: true
+
+configOverride:
+  cache:
+    prefetch:
+      prediction: {}
 
 replicaCount: 2
 
