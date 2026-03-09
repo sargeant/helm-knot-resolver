@@ -55,19 +55,22 @@ By default, pods use `dnsPolicy: ClusterFirst`, which has the kubelet inject the
 
 ## Custom configuration
 
-The chart exposes a handful of first-class values (`resolver.*`, `logging.level`, `cache.sizeLimit`). For anything else, use `configOverride` — it is merged last and accepts any valid [Knot Resolver config](https://www.knot-resolver.cz/documentation/latest/config-overview.html):
+The chart exposes common settings as first-class values (`resolver.*`, `logging.*`, `cache.*`). For anything else, use `configOverride` — it is merged last and accepts any valid [Knot Resolver config](https://www.knot-resolver.cz/documentation/latest/config-overview.html):
 
 ```yaml
 configOverride:
   cache:
-    ttl-min: 60s
-    ttl-max: 86400s
     prefetch:
-      expiring: true
-  dnssec:
-    log-bogus: true
-  options:
-    glue-checking: strict
+      prediction:
+        enable: true
+        window: 15m
+    prefill:
+      - origin: "."
+        url: https://www.internic.net/domain/root.zone
+        refresh-interval: 1d
+  local-data:
+    addresses:
+      myhost.example.com: 192.168.1.1
 ```
 
 ## Caveats
