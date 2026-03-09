@@ -2,7 +2,7 @@ apiVersion: v2
 name: knot-resolver
 description: Caching DNSSEC-validating DNS resolver
 type: application
-version: 0.7.1
+version: 0.7.2
 kubeVersion: ">=1.23.0-0"
 appVersion: "v6.2.0"
 home: https://www.knot-resolver.cz/
@@ -26,6 +26,9 @@ annotations:
       url: https://www.knot-resolver.cz/documentation/latest/
     - name: support
       url: https://github.com/sargeant/helm-knot-resolver/issues
+  artifacthub.io/signKey: |
+    fingerprint: F64D93391C73BF1B916555C9039A89A3D7EDA553
+    url: https://keys.openpgp.org/vks/v1/by-fingerprint/F64D93391C73BF1B916555C9039A89A3D7EDA553
   artifacthub.io/changes: |
     - kind: changed
       description: See release notes

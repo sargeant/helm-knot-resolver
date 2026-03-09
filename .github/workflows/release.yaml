@@ -45,6 +45,11 @@ jobs:
         env:
           OUTPUT: ARTIFACTHUB-CHANGES.yaml
 
+      - name: Import GPG signing key
+        run: |
+          echo "${{ secrets.GPG_SIGNING_KEY }}" | base64 -d | gpg --import --batch
+          gpg --export-secret-keys > ~/.gnupg/secring.gpg
+
       - name: Inject ArtifactHub changelog into Chart.yaml
         run: |
           CHANGES=$(cat ARTIFACTHUB-CHANGES.yaml)
@@ -58,6 +63,9 @@ jobs:
           config: cr.yaml
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_SIGN: "true"
+          CR_KEY: "Knot Resolver Helm Chart <knot-resolver@sargeant.net.nz>"
+          CR_KEYRING: ~/.gnupg/secring.gpg
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -68,5 +76,5 @@ jobs:
 
       - name: Push chart to GHCR
         run: |
-          helm package charts/knot-resolver
+          helm package --sign --key "Knot Resolver Helm Chart <knot-resolver@sargeant.net.nz>" --keyring ~/.gnupg/secring.gpg charts/knot-resolver
           helm push knot-resolver-*.tgz oci://ghcr.io/${{ github.repository_owner }}
