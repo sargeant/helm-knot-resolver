@@ -1,6 +1,6 @@
 # helm-knot-resolver
 
-Helm chart for [Knot Resolver](https://www.knot-resolver.cz/) — a caching, DNSSEC-validating DNS resolver for Kubernetes.
+Helm chart for [Knot Resolver](https://www.knot-resolver.cz/), a caching, DNSSEC-validating DNS resolver for Kubernetes.
 
 Deploys as an opt-in secondary DNS alongside CoreDNS. Pods that set `dnsPolicy: None` pointing at the Knot Resolver ClusterIP get DNSSEC validation, custom forwarding, and recursive resolution.
 
@@ -8,7 +8,7 @@ Uses the official [`cznic/knot-resolver`](https://hub.docker.com/r/cznic/knot-re
 
 ## Quick start
 
-Assign a stable ClusterIP so pods can reference it in `dnsConfig.nameservers`. The snippet below derives `.53` from your cluster's Service CIDR — pick any unused address in range.
+Assign a stable ClusterIP so pods can reference it in `dnsConfig.nameservers`. The snippet below derives `.53` from your cluster's Service CIDR. Pick any unused address in range.
 
 ```bash
 DNS_IP=$(kubectl get svc kubernetes -o jsonpath='{.spec.clusterIP}' | \
@@ -27,7 +27,7 @@ helm upgrade knot-resolver knot-resolver/knot-resolver \
   --set forwarding.kubeDNS.enabled=true
 ```
 
-Then configure pods — `dnsPolicy: "None"` stops the kubelet overriding nameservers, so the pod uses exactly the `dnsConfig` you provide:
+Then configure pods. Setting `dnsPolicy: "None"` stops the kubelet overriding nameservers, so the pod uses exactly the `dnsConfig` you provide:
 
 ```yaml
 spec:
