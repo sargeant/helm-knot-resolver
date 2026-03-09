@@ -26,6 +26,9 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
 
+      - name: Set up yq
+        uses: mikefarah/yq@master
+
       - name: Generate release notes
         uses: orhun/git-cliff-action@v4
         with:
