@@ -4,6 +4,44 @@ entries:
   - annotations:
       artifacthub.io/category: networking
       artifacthub.io/changes: |-
+        - kind: changed
+          description: add pre-release stability badge
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |
+        - name: Knot Resolver docs
+          url: https://www.knot-resolver.cz/documentation/latest/
+        - name: support
+          url: https://github.com/sargeant/helm-knot-resolver/issues
+      artifacthub.io/signKey: |
+        fingerprint: F64D93391C73BF1B916555C9039A89A3D7EDA553
+        url: https://keys.openpgp.org/vks/v1/by-fingerprint/F64D93391C73BF1B916555C9039A89A3D7EDA553
+    apiVersion: v2
+    appVersion: v6.2.0
+    created: "2026-03-10T01:15:22.613912941Z"
+    description: Caching DNSSEC-validating DNS resolver
+    digest: b21ebde5afbd37c3500e3979c771b67a754787e6bc7fd2a8f4fb4ca23ad03f61
+    home: https://www.knot-resolver.cz/
+    keywords:
+    - dns
+    - resolver
+    - dnssec
+    - knot-resolver
+    - kresd
+    kubeVersion: '>=1.23.0-0'
+    maintainers:
+    - email: sam@sargeant.net.nz
+      name: Sam Sargeant
+      url: https://github.com/sargeant
+    name: knot-resolver
+    sources:
+    - https://github.com/CZ-NIC/knot-resolver
+    type: application
+    urls:
+    - https://github.com/sargeant/helm-knot-resolver/releases/download/knot-resolver-0.7.3/knot-resolver-0.7.3.tgz
+    version: 0.7.3
+  - annotations:
+      artifacthub.io/category: networking
+      artifacthub.io/changes: |-
         - kind: added
           description: add GPG signing for Helm chart releases
       artifacthub.io/license: Apache-2.0
@@ -270,4 +308,4 @@ entries:
     urls:
     - https://github.com/sargeant/helm-knot-resolver/releases/download/knot-resolver-0.4.0/knot-resolver-0.4.0.tgz
     version: 0.4.0
-generated: "2026-03-09T11:36:50.557271574Z"
+generated: "2026-03-10T01:15:22.613955631Z"
