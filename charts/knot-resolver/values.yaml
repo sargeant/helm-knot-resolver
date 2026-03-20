@@ -198,6 +198,9 @@ image:
   # @section -- Image
   # @default -- chart appVersion
   tag: ""
+  # -- Image digest (e.g. `sha256:abc...`). When set, overrides `tag`.
+  # @section -- Image
+  digest: ""
   # -- Image pull policy
   # @section -- Image
   pullPolicy: IfNotPresent
