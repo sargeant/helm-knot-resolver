@@ -37,7 +37,11 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 {{- define "knot-resolver.image" -}}
 {{- $tag := default .Chart.AppVersion .Values.image.tag }}
+{{- if .Values.image.digest }}
+{{- printf "%s@%s" .Values.image.repository .Values.image.digest }}
+{{- else }}
 {{- printf "%s:%s" .Values.image.repository $tag }}
+{{- end }}
 {{- end }}
 
 {{/*
