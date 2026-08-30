@@ -222,9 +222,13 @@ serviceAccount:
 # @ignored
 podSecurityContext:
   runAsNonRoot: true
-  runAsUser: 101
-  runAsGroup: 102
-  fsGroup: 102
+  # uid/gid of the knot-resolver user in the upstream image. These track the
+  # base image's user numbering, which shifted in appVersion v6.4.1 when
+  # Debian 13 dropped the messagebus user. Override these if you pin
+  # image.tag to a release older than v6.4.1.
+  runAsUser: 100
+  runAsGroup: 101
+  fsGroup: 101
   seccompProfile:
     type: RuntimeDefault
 
