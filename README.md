@@ -21,6 +21,12 @@ helm install knot-resolver knot-resolver/knot-resolver \
 helm test knot-resolver
 ```
 
+## AI disclosure
+
+This chart is written with AI assistance (Claude Code). I review every change and
+I'm accountable for what ships. CI runs `ct lint`, kubeconform, Trivy, and a
+`ct install` plus `helm test` against a kind cluster on every chart PR.
+
 ## Licence
 
 [Apache 2.0](LICENSE)

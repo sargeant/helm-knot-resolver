@@ -1,6 +1,6 @@
 # knot-resolver
 
-![Version: 1.0.5](https://img.shields.io/badge/Version-1.0.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v6.4.2](https://img.shields.io/badge/AppVersion-v6.4.2-informational?style=flat-square)
+![Version: 1.0.6](https://img.shields.io/badge/Version-1.0.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v6.4.2](https://img.shields.io/badge/AppVersion-v6.4.2-informational?style=flat-square)
 
 Caching DNSSEC-validating DNS resolver
 
@@ -80,6 +80,12 @@ configOverride:
 - **Don't point your GitOps tool at Knot Resolver**. If ArgoCD/Flux deploys+queries Knot Resolver and it goes down, you can't redeploy.
 - **Service mesh DNS capture**. Service mesh sidecars may intercept DNS before it reaches Knot Resolver, bypassing DNSSEC validation.
 - **`cluster.local` is unsigned**. The kube-dns forward uses `dnssec: false`, so responses for internal names are not authenticated. Enabling `networkPolicy` restricts which pods can query and respond on that path.
+
+## AI disclosure
+
+This chart is written with AI assistance (Claude Code). I review every change and
+I'm accountable for what ships. CI runs `ct lint`, kubeconform, Trivy, and a
+`ct install` plus `helm test` against a kind cluster on every chart PR.
 
 ## Values
 

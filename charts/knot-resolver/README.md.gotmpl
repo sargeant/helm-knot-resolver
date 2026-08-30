@@ -81,6 +81,12 @@ configOverride:
 - **Service mesh DNS capture**. Service mesh sidecars may intercept DNS before it reaches Knot Resolver, bypassing DNSSEC validation.
 - **`cluster.local` is unsigned**. The kube-dns forward uses `dnssec: false`, so responses for internal names are not authenticated. Enabling `networkPolicy` restricts which pods can query and respond on that path.
 
+## AI disclosure
+
+This chart is written with AI assistance (Claude Code). I review every change and
+I'm accountable for what ships. CI runs `ct lint`, kubeconform, Trivy, and a
+`ct install` plus `helm test` against a kind cluster on every chart PR.
+
 {{ template "chart.valuesSection" . }}
 
 {{ template "chart.maintainersSection" . }}
