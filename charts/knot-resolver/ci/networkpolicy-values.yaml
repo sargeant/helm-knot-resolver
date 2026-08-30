@@ -1,0 +1,16 @@
+# Vanilla NetworkPolicy, covering the ingress loop and the metrics rule.
+#
+# The flavor must stay `kubernetes`. `cilium` renders and passes kubeconform,
+# which ignores missing schemas, but ct install fails on it because kind has no
+# CiliumNetworkPolicy CRD.
+#
+# kind's CNI does enforce NetworkPolicy, so the helm test pod only reaches the
+# resolver because ingressNamespaces names the namespace ct installs into. That
+# namespace is pinned in ct.yaml and the two have to stay in step.
+networkPolicy:
+  enabled: true
+  flavor: kubernetes
+  ingressNamespaces:
+    - knot-resolver-ci
+  metricsNamespace: monitoring
+  egressToInternet: true
