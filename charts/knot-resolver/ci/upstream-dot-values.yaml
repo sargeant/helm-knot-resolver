@@ -1,0 +1,14 @@
+# DoT upstream alongside cluster.local forwarding: two forward zones, the
+# specific subtree plus the root. Verified working on appVersion v6.4.2, and
+# kept here so a regression shows up in CI rather than in a cluster.
+#
+# Do not set forwarding.kubeDNS.clusterIP here. ct install runs against a real
+# kind cluster, where the point is to exercise the lookup auto-detect path.
+# Bare `helm template` on this file fails by design; the kubeconform hook and
+# the CI workflow pass the address in with --set.
+forwarding:
+  kubeDNS:
+    enabled: true
+  upstream:
+    enabled: true
+    provider: quad9
