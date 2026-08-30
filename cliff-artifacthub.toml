@@ -14,14 +14,22 @@ trim = false
 [git]
 conventional_commits = true
 filter_unconventional = false
+# ArtifactHub only accepts these kinds: added, changed, deprecated, removed,
+# fixed and security. An unmatched commit falls through to its raw conventional
+# type, so `test:` used to emit `kind: test` and would have shipped an invalid
+# annotation in 1.0.5, the first release to carry one. The trailing catch-all
+# keeps any future type (perf, build, style) from leaking the same way. It must
+# stay last, after the skip rules.
 commit_parsers = [
     { message = "^feat", group = "added" },
     { message = "^fix", group = "fixed" },
     { message = "^refactor", group = "changed" },
     { message = "^doc", group = "changed" },
+    { message = "^test", group = "changed" },
     { message = "^chore\\(deps\\)", skip = true },
     { message = "^chore: bump chart version", skip = true },
     { message = "^chore|^ci", group = "changed" },
+    { message = ".*", group = "changed" },
 ]
 filter_commits = false
 sort_commits = "oldest"
