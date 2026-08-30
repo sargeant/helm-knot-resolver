@@ -49,10 +49,14 @@ spec:
             - name: metrics
               containerPort: {{ .Values.managementPort }}
               protocol: TCP
+          # Startup and readiness track the DNS port. The management API answers
+          # several seconds before the kresd workers bind, so probing it marks
+          # the pod Ready while queries still get ICMP port unreachable.
+          # Liveness stays on the management API, which is what detects a
+          # wedged manager.
           startupProbe:
-            httpGet:
-              path: /metrics/prometheus
-              port: metrics
+            tcpSocket:
+              port: dns-tcp
             failureThreshold: 30
             periodSeconds: 2
           livenessProbe:
@@ -61,9 +65,8 @@ spec:
               port: metrics
             periodSeconds: 10
           readinessProbe:
-            httpGet:
-              path: /metrics/prometheus
-              port: metrics
+            tcpSocket:
+              port: dns-tcp
             periodSeconds: 5
           securityContext:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
