@@ -27,6 +27,20 @@ app.kubernetes.io/name: {{ include "knot-resolver.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
+{{/*
+Labels for the helm test pod. Deliberately not knot-resolver.labels: those carry
+the selector labels, so the test pod would register as an endpoint of the very
+Service it queries and half the lookups would hit a pod listening on nothing.
+*/}}
+{{- define "knot-resolver.testLabels" -}}
+helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+app.kubernetes.io/name: {{ include "knot-resolver.name" . }}-test
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: test
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
 {{- define "knot-resolver.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
 {{- default (include "knot-resolver.fullname" .) .Values.serviceAccount.name }}
