@@ -83,5 +83,10 @@ jobs:
       - name: Create kind cluster
         uses: helm/kind-action@v1
 
+      # ct.yaml pins the install namespace so the NetworkPolicy values file can
+      # name it. ct expects a configured namespace to already exist.
+      - name: Create test namespace
+        run: kubectl create namespace knot-resolver-ci
+
       - name: Install chart
         run: ct install --config ct.yaml
