@@ -1,0 +1,8 @@
+# Chart defaults: cluster.local forwarding off, so the resolver answers
+# external names only and renders no forward zone at all.
+#
+# Also covers the NOTES.txt branch that warns when kube-dns exists in the
+# cluster but nothing forwards to it.
+forwarding:
+  kubeDNS:
+    enabled: false
