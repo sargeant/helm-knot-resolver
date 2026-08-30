@@ -3,7 +3,6 @@
 {{ template "chart.deprecationWarning" . }}
 
 {{ template "chart.badgesSection" . }}
-![Pre--release](https://img.shields.io/badge/Status-Pre--release-orange?style=flat-square)
 
 {{ template "chart.description" . }}
 
@@ -24,7 +23,9 @@ DNS_IP=$(kubectl get svc kubernetes -o jsonpath='{.spec.clusterIP}' | \
   awk -F. '{print $1"."$2"."$3".53"}')
 
 helm repo add knot-resolver https://sargeant.github.io/helm-knot-resolver
-helm install knot-resolver knot-resolver/knot-resolver --set service.clusterIP=$DNS_IP
+helm install knot-resolver knot-resolver/knot-resolver \
+  --set service.clusterIP=$DNS_IP \
+  --set forwarding.kubeDNS.enabled=true
 helm test knot-resolver
 ```
 
