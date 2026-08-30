@@ -3,7 +3,7 @@ kind: Pod
 metadata:
   name: {{ include "knot-resolver.fullname" . }}-test-dns
   labels:
-    {{- include "knot-resolver.labels" . | nindent 4 }}
+    {{- include "knot-resolver.testLabels" . | nindent 4 }}
   annotations:
     helm.sh/hook: test
     helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
