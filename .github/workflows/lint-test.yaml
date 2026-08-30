@@ -1,14 +1,43 @@
 name: CI
 
+# Runs on every pull request rather than filtering by path at the trigger.
+# lint, kubeconform and trivy are required checks on main, and a workflow that
+# never starts leaves them pending forever, so a PR touching only cliff.toml or
+# a README could not merge. Job-level conditions skip the work instead, and a
+# skipped job satisfies a required check.
 on:
   pull_request:
-    paths:
-      - "charts/knot-resolver/**"
-      - "ct.yaml"
-      - ".github/workflows/lint-test.yaml"
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      chart: ${{ steps.filter.outputs.chart }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for chart changes
+        id: filter
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if git diff --name-only "$BASE" "$HEAD" \
+            | grep -qE '^(charts/knot-resolver/|ct\.yaml$|\.github/workflows/lint-test\.yaml$)'; then
+            echo "chart=true" >> "$GITHUB_OUTPUT"
+            echo "Chart changed; running the full suite."
+          else
+            echo "chart=false" >> "$GITHUB_OUTPUT"
+            echo "No chart changes; lint, kubeconform, trivy and install will skip."
+          fi
+
   lint:
+    needs: changes
+    if: needs.changes.outputs.chart == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -26,6 +55,8 @@ jobs:
         run: ct lint --config ct.yaml
 
   kubeconform:
+    needs: changes
+    if: needs.changes.outputs.chart == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -50,6 +81,8 @@ jobs:
           done
 
   trivy:
+    needs: changes
+    if: needs.changes.outputs.chart == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -66,8 +99,9 @@ jobs:
           trivyignores: charts/knot-resolver/.trivyignore
 
   install:
+    needs: [changes, lint, kubeconform, trivy]
+    if: needs.changes.outputs.chart == 'true'
     runs-on: ubuntu-latest
-    needs: [lint, kubeconform, trivy]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
