@@ -199,6 +199,8 @@ image:
   # @default -- chart appVersion
   tag: ""
   # -- Image digest (e.g. `sha256:abc...`). When set, overrides `tag`.
+  # Upstream rebuilds release tags in place to pick up base-image security
+  # patches, so a pinned digest freezes those out until you refresh it.
   # @section -- Image
   digest: ""
   # -- Image pull policy

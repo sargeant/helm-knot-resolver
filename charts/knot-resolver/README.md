@@ -1,7 +1,6 @@
 # knot-resolver
 
-![Version: 0.8.0](https://img.shields.io/badge/Version-0.8.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v6.2.0](https://img.shields.io/badge/AppVersion-v6.2.0-informational?style=flat-square)
-![Pre--release](https://img.shields.io/badge/Status-Pre--release-orange?style=flat-square)
+![Version: 0.8.0](https://img.shields.io/badge/Version-0.8.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v6.4.2](https://img.shields.io/badge/AppVersion-v6.4.2-informational?style=flat-square)
 
 Caching DNSSEC-validating DNS resolver
 
@@ -24,7 +23,9 @@ DNS_IP=$(kubectl get svc kubernetes -o jsonpath='{.spec.clusterIP}' | \
   awk -F. '{print $1"."$2"."$3".53"}')
 
 helm repo add knot-resolver https://sargeant.github.io/helm-knot-resolver
-helm install knot-resolver knot-resolver/knot-resolver --set service.clusterIP=$DNS_IP
+helm install knot-resolver knot-resolver/knot-resolver \
+  --set service.clusterIP=$DNS_IP \
+  --set forwarding.kubeDNS.enabled=true
 helm test knot-resolver
 ```
 
@@ -172,7 +173,7 @@ configOverride:
 |-----|------|---------|-------------|
 | image.repository | string | `"cznic/knot-resolver"` | Container image repository |
 | image.tag | string | chart appVersion | Image tag (defaults to the chart's `appVersion`) |
-| image.digest | string | `""` | Image digest (e.g. `sha256:abc...`). When set, overrides `tag`. |
+| image.digest | string | `""` | Image digest (e.g. `sha256:abc...`). When set, overrides `tag`. Upstream rebuilds release tags in place to pick up base-image security patches, so a pinned digest freezes those out until you refresh it. |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 
 ### Other Values
