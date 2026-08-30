@@ -2,7 +2,7 @@ apiVersion: v2
 name: knot-resolver
 description: Caching DNSSEC-validating DNS resolver
 type: application
-version: 1.0.2
+version: 1.0.3
 kubeVersion: ">=1.23.0-0"
 appVersion: "v6.4.2"
 home: https://www.knot-resolver.cz/
