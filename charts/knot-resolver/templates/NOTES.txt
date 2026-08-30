@@ -7,6 +7,8 @@ Knot Resolver is running in namespace {{ .Release.Namespace }}.
 {{- $clusterIP = $svc.spec.clusterIP }}
 {{- end }}
 {{- end }}
+{{- $kubeDNSForwarding := .Values.forwarding.kubeDNS.enabled }}
+{{- $kubeDNSSvc := (lookup "v1" "Service" "kube-system" "kube-dns") }}
 
 {{- if $clusterIP }}
 DNS ClusterIP: {{ $clusterIP }}
@@ -20,17 +22,36 @@ Add to each pod that should use Knot Resolver:
     dnsConfig:
       nameservers:
         - "{{ $clusterIP }}"
+{{- if $kubeDNSForwarding }}
       searches:
         - NAMESPACE.svc.cluster.local
         - svc.cluster.local
         - cluster.local
+{{- end }}
       options:
         - name: ndots
           value: "2"
-
+{{ if $kubeDNSForwarding }}
 Replace NAMESPACE with the pod's namespace.
+{{- end }}
 {{- else }}
 DNS service: {{ include "knot-resolver.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
 
 Set service.clusterIP to a stable IP so pods can use it in dnsConfig.nameservers (which requires an IP, not a hostname).
+{{- end }}
+
+{{- if and (not $kubeDNSForwarding) $kubeDNSSvc }}
+WARNING: cluster.local forwarding is off.
+
+  kube-dns was found at {{ $kubeDNSSvc.spec.clusterIP }}, but Knot Resolver is not
+  forwarding to it. Pods that switch to dnsPolicy "None" using the config above
+  will resolve external names only. In-cluster names such as
+  kubernetes.default.svc.cluster.local will fail.
+
+  To forward cluster.local to kube-dns:
+
+    helm upgrade {{ .Release.Name }} --namespace {{ .Release.Namespace }} \
+      --reuse-values --set forwarding.kubeDNS.enabled=true
+
+  Leave it off only if these pods are meant to resolve external names alone.
 {{- end }}
