@@ -35,8 +35,9 @@ repos:
       - id: kubeconform
         name: kubeconform
         entry: >-
-          bash -c 'for f in charts/knot-resolver/ci/*.yaml; do
+          bash -c 'set -euo pipefail; for f in charts/knot-resolver/ci/*.yaml; do
           helm template t charts/knot-resolver -f "$f" --set service.clusterIP=10.96.0.53
+          --set forwarding.kubeDNS.clusterIP=10.96.0.10
           | kubeconform -strict -summary -ignore-missing-schemas
           -kubernetes-version 1.30.0; done'
         language: system
