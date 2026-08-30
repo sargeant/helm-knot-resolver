@@ -2,7 +2,7 @@
 header = ""
 body = """
 {% for group, commits in commits | group_by(attribute="group") %}
-### {{ group | upper_first }}
+### {{ group | striptags | trim | upper_first }}
 {% for commit in commits %}\
 - {{ commit.message | split(pat="\n") | first | upper_first | trim }}
 {% endfor %}\
@@ -14,15 +14,17 @@ trim = true
 [git]
 conventional_commits = true
 filter_unconventional = false
+# Groups render in the order of their <!-- N --> prefix, which `striptags` removes
+# from the heading. Without it Tera's group_by sorts headings alphabetically.
 commit_parsers = [
-    { message = "^feat", group = "Features" },
-    { message = "^fix", group = "Bug Fixes" },
-    { message = "^refactor", group = "Refactor" },
-    { message = "^test", group = "Testing" },
-    { message = "^doc", group = "Documentation" },
+    { message = "^feat", group = "<!-- 0 -->Features" },
+    { message = "^fix", group = "<!-- 1 -->Bug Fixes" },
+    { message = "^refactor", group = "<!-- 2 -->Refactor" },
+    { message = "^doc", group = "<!-- 3 -->Documentation" },
+    { message = "^test", group = "<!-- 4 -->Testing" },
     { message = "^chore\\(deps\\)", skip = true },
     { message = "^chore: bump chart version", skip = true },
-    { message = "^chore|^ci", group = "Miscellaneous" },
+    { message = "^chore|^ci", group = "<!-- 5 -->Miscellaneous" },
 ]
 filter_commits = false
 sort_commits = "oldest"
