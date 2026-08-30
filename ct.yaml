@@ -1,3 +1,9 @@
 chart-dirs:
   - charts
 validate-maintainers: false
+# ct install otherwise generates a random namespace per release. The
+# NetworkPolicy values file has to name the namespace it allows ingress from,
+# so pin it. ct does not create a configured namespace, which is why
+# lint-test.yaml creates it before ct install runs.
+namespace: knot-resolver-ci
+release-label: app.kubernetes.io/instance
